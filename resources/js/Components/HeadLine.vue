@@ -1,7 +1,7 @@
 <template>
     <header>
         <h1>Read & Write</h1>
-        <font-awesome-icon icon="fa-solid fa-file-csv" class="icon"/>
+        <font-awesome-icon icon="fa-solid fa-file-csv" class="icon" />
     </header>
 </template>
 
