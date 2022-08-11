@@ -7,18 +7,35 @@
         >
             <label :for="item">{{ item }}</label>
             <input type="text" :id="item" v-model="data[item]" />
+            <p v-if="error[item]" class="form-error">{{ error[item] }}</p>
         </div>
-        <button type="submit">
-            <font-awesome-icon icon="fa-solid fa-floppy-disk" class="icon" />
-            <span>Save</span>
-        </button>
+        <div class="button-wrapper">
+            <button type="submit">
+                <font-awesome-icon
+                    v-if="showIcon === 'save'"
+                    icon="fa-solid fa-floppy-disk"
+                    class="icon"
+                />
+                <font-awesome-icon
+                    v-if="showIcon === 'check'"
+                    icon="fa-solid fa-circle-check"
+                    class="icon icon-check"
+                />
+                <font-awesome-icon
+                    v-if="showIcon === 'error'"
+                    icon="fa-solid fa-triangle-exclamation"
+                    class="icon icon-error"
+                />
+                <span>Save</span>
+            </button>
+        </div>
     </form>
 </template>
 
 <script lang="ts">
 import axios from "axios";
-import { defineComponent, PropType, reactive } from "vue";
-import { HeaderTuple, IArticle, TCheckValues } from "../types";
+import { defineComponent, PropType, reactive, ref } from "vue";
+import { HeaderTuple, IArticle, TFormError } from "../types";
 
 export default defineComponent({
     name: "AddData",
@@ -28,7 +45,7 @@ export default defineComponent({
             required: true,
         },
     },
-    setup(props) {
+    setup() {
         const data = reactive<IArticle>({
             Hauptartikelnr: "",
             Artikelname: "",
@@ -48,7 +65,7 @@ export default defineComponent({
             Bildname: "",
         });
 
-        const error = reactive<IArticle>({
+        const error = reactive<TFormError>({
             Hauptartikelnr: "",
             Artikelname: "",
             Hersteller: "",
@@ -56,22 +73,16 @@ export default defineComponent({
             Materialangaben: "",
             Geschlecht: "",
             Produktart: "",
-            Ärmel: "",
-            Bein: "",
-            Kragen: "",
-            Herstellung: "",
-            Taschenart: "",
-            Grammatur: "",
             Material: "",
-            Ursprungsland: "",
-            Bildname: "",
         });
 
-        function checkIfEmpty(arr: TCheckValues): boolean {
+        const showIcon = ref<"save" | "check" | "error">("save");
+
+        function checkIfEmpty(): boolean {
             let hasError = false;
-            for (const elem of arr) {
+            for (const elem in error) {
                 if (data[elem] === "") {
-                    error[elem] = "Fill out this field!";
+                    error[elem] = "Please fill in this field";
                     hasError = true;
                 } else {
                     error[elem] = "";
@@ -80,25 +91,39 @@ export default defineComponent({
             return hasError;
         }
 
+        function clearInputs() {
+            for (const elem in data) {
+                data[elem] = "";
+            }
+            for (const elem in error) {
+                error[elem] = "";
+            }
+        }
+
+        function timeoutIcon(str: "check" | "error") {
+            showIcon.value = str;
+            setTimeout(() => (showIcon.value = "save"), 3000);
+        }
+
         async function submit() {
-            if (
-                checkIfEmpty(
-                    props.columns.filter(
-                        (item) =>
-                            !item.match(
-                                /Ärmel|Bein|Kragen|Herstellung|Taschenart|Grammatur|Ursprungsland|Bildname/
-                            )
-                    ) as TCheckValues
-                )
-            ) {
+            if (checkIfEmpty()) {
+                timeoutIcon("error");
                 return;
             }
 
             const response = await axios.post("/api/add", data);
-            console.log(response);
+            if (response.status === 200 && response.data.error) {
+                checkIfEmpty();
+                timeoutIcon("error");
+            } else if (response.status === 200 && response.data.ok) {
+                clearInputs();
+                timeoutIcon("check");
+            } else {
+                timeoutIcon("error");
+            }
         }
 
-        return { data, error, submit };
+        return { data, error, submit, showIcon };
     },
 });
 </script>
@@ -129,16 +154,26 @@ input[type="text"] {
     border: 2px solid var(--color-white);
     border-radius: 5px;
     height: 20px;
+    padding: 2px;
 }
 .error {
-    color: #0077b6;
+    color: #023e8a;
 }
 
 .error input[type="text"] {
-    border: 2px solid #0077b6;
+    border: 2px solid #023e8a;
+}
+
+.form-error {
+    font-size: 0.8rem;
+}
+
+.button-wrapper {
+    width: 100%;
 }
 
 button {
+    margin: 0 auto;
     background-color: transparent;
     width: 80px;
     display: flex;
@@ -155,5 +190,13 @@ button span {
 
 .icon {
     font-size: 2rem;
+}
+
+.icon-check {
+    color: green;
+}
+
+.icon-error {
+    color: #023e8a;
 }
 </style>

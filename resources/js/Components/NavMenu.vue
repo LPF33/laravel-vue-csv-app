@@ -69,9 +69,11 @@ a {
     text-decoration: none;
 }
 
-button:not(.active):hover {
+button:not(.active):hover,
+a:hover {
     background-color: rgba(255, 255, 255, 0.4);
     border-radius: 5px;
+    cursor: pointer;
 }
 
 button.active {

@@ -63,6 +63,17 @@ export default defineComponent({
                             "#90E0EF",
                             "#ADE8F4",
                             "#CAF0F8",
+                            "#eaf2e3",
+                            "#fce0ce",
+                            "#faf3dd",
+                            "#d9f3e2",
+                            "#b8f2e6",
+                            "#b3e6e3",
+                            "#ff8995",
+                            "#ff99eb",
+                            "#fca1d9",
+                            "#fefb6b",
+                            "#a385e5",
                         ],
                         data: [],
                     },
@@ -70,6 +81,12 @@ export default defineComponent({
             },
             chartOptions: {
                 responsive: true,
+                color: "white",
+                elements: {
+                    arc: {
+                        borderWidth: 0,
+                    },
+                },
             },
             chartId: "pie-chart",
         });
@@ -92,7 +109,6 @@ export default defineComponent({
                 }
                 return obj;
             }, {}) as { [key: string]: number }[];
-            console.log(labels, dataValues);
 
             data.chartData.labels = labels as never[];
             data.chartData.datasets[0].data = Object.values(

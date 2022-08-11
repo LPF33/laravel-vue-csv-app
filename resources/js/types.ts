@@ -16,19 +16,6 @@ export type HeaderTuple = [
     "Ursprungsland",
     "Bildname"
 ];
-
-export type TCheckValues = Omit<
-    HeaderTuple,
-    | "Ärmel"
-    | "Bein"
-    | "Kragen"
-    | "Herstellung"
-    | "Taschenart"
-    | "Grammatur"
-    | "Ursprungsland"
-    | "Bildname"
->;
-
 export interface IArticle {
     Hauptartikelnr: string;
     Artikelname: string;
@@ -47,6 +34,8 @@ export interface IArticle {
     Ursprungsland: string;
     Bildname: string;
 }
+
+export type TFormError = Omit<IArticle, "Ärmel"|"Bein"|"Kragen"|"Herstellung"|"Taschenart"|"Grammatur"|"Ursprungsland"|"Bildname">;
 
 export interface AxiosReponse {
     header: HeaderTuple;

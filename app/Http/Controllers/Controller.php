@@ -16,7 +16,7 @@ class Controller extends BaseController
 
     public function readCSV(){
         if(!file_exists(self::FILE_PATH)) {
-            return response(["error" => sprintf("Cannot read %s file", self::FILE_PATH)], 500, ["Content-type" => "application/json"]);
+            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
         }
 
         $fileResource = fopen(self::FILE_PATH, 'r');
@@ -40,9 +40,9 @@ class Controller extends BaseController
                 array_push($tableArray['body'], $newRow);
             }
             $rowCounter++;
-            if($rowCounter === 50) {
+            /* if($rowCounter === 50) {
                 break;
-            }
+            } */
         }
         fclose($fileResource);
 
@@ -50,21 +50,30 @@ class Controller extends BaseController
     }
 
     public function appendCSV(Request $request){
-        echo var_dump($request->collect());
-        /* 
         if(!file_exists(self::FILE_PATH)) {
             return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
         }
 
-        $fileResource = fopen(self::FILE_PATH, 'a');
+        $collection = $request->collect();
 
-        $data = [["asd", "asd"]];
+        $newRow = $collection->map(fn($value) => htmlspecialchars($value));
 
-        foreach($data as $row) {
-            fputcsv($fileResource, $row, ';');
+        if($newRow->filter(function($value, $key){
+            if(preg_match('/Ärmel|Bein|Kragen|Herstellung|Taschenart|Grammatur|Ursprungsland|Bildname/',$key)){
+                return false;
+            }
+            return true;
+        })->contains(fn($value) => $value === "")){
+            return response()->json(["error"=>"Incorrect input", "data" => $newRow]);
         }
 
-        fclose($fileResource); */
+        $fileResource = fopen(self::FILE_PATH, 'a');
+
+        fputcsv($fileResource, [...$newRow->values()], ';');
+
+        fclose($fileResource);
+
+        return response()->json(["ok"=>"correct input", "data" => $newRow]);
     }
 
     public function exportCSV() {
