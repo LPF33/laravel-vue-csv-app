@@ -7,6 +7,7 @@
         :body="data.body"
     />
     <ChartUnit v-show="show === 'chart'" />
+    <AddData v-show="show === 'add'" :columns="data.header"/>
 </template>
 
 <script setup lang="ts">
@@ -17,6 +18,7 @@ import TableUnit from "./Components/TableUnit.vue";
 import NavMenu from "./Components/NavMenu.vue";
 import ChartUnit from "./Components/ChartUnit.vue";
 import HeadLine from "./Components/HeadLine.vue";
+import AddData from "./Components/AddData.vue";
 
 const data = reactive({
     header: [] as HeaderTuple | [],
@@ -26,7 +28,7 @@ const data = reactive({
 const show = ref<TToggleMenu>("table");
 
 (async () => {
-    const response = await axios.post<AxiosReponse>("/api/read");
+    const response = await axios.get<AxiosReponse>("/api/read");
     if (response.status === 200 && response.data) {
         data.header = response.data.header;
         data.body = response.data.body;

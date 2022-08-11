@@ -15,4 +15,8 @@ use App\Http\Controllers\Controller;
 |
 */
 
-Route::post('/read', [Controller::class, 'readCSV']);
+Route::get('/read', [Controller::class, 'readCSV']);
+
+Route::get('/export', [Controller::class, 'exportCSV']);
+
+Route::post('/add', [Controller::class, 'appendCSV']);

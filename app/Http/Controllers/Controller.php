@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Http\Request;
 
 class Controller extends BaseController
 {
@@ -14,11 +15,11 @@ class Controller extends BaseController
     const FILE_PATH = __DIR__ . '/../../Assets/Artikel.csv';
 
     public function readCSV(){
-        $fileResource = fopen(self::FILE_PATH, 'r');
-        if($fileResource === false) {
-            exit(print_r("Cannot read {self::FILE_PATH} file"));
+        if(!file_exists(self::FILE_PATH)) {
+            return response(["error" => sprintf("Cannot read %s file", self::FILE_PATH)], 500, ["Content-type" => "application/json"]);
         }
 
+        $fileResource = fopen(self::FILE_PATH, 'r');
         $tableArray = [
             'header' => [],
             'body' => [],
@@ -45,7 +46,31 @@ class Controller extends BaseController
         }
         fclose($fileResource);
 
-        header('Content-Type: application/json');
-        echo json_encode($tableArray);
+        return response()->json($tableArray);
+    }
+
+    public function appendCSV(Request $request){
+        echo var_dump($request->collect());
+        /* 
+        if(!file_exists(self::FILE_PATH)) {
+            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
+        }
+
+        $fileResource = fopen(self::FILE_PATH, 'a');
+
+        $data = [["asd", "asd"]];
+
+        foreach($data as $row) {
+            fputcsv($fileResource, $row, ';');
+        }
+
+        fclose($fileResource); */
+    }
+
+    public function exportCSV() {
+        if(!file_exists(self::FILE_PATH)) {
+            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
+        }
+        return response()->download(self::FILE_PATH, "Artikel.csv", ["Content-type"=>"text/csv"]);
     }
 }

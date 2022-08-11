@@ -14,6 +14,17 @@
             <font-awesome-icon icon="fa-solid fa-chart-column" class="icon" />
             <span>Chart</span>
         </button>
+        <button
+            @click="toggleClicked('add')"
+            :class="{ active: activeElem === 'add' }"
+        >
+            <font-awesome-icon icon="fa-solid fa-file-circle-plus" class="icon"/>
+            <span>Add Data</span>
+        </button>
+        <a href="/api/export">
+            <font-awesome-icon icon="fa-solid fa-download" class="icon" />
+            <span>Download</span>
+        </a>
     </nav>
 </template>
 
@@ -43,7 +54,7 @@ nav {
     background-color: var(--header-color);
 }
 
-button {
+button, a {
     background-color: transparent;
     width: 100px;
     display: inline-flex;
@@ -51,6 +62,12 @@ button {
     align-items: center;
     color: var(--inactive-tab);
     border-bottom: 2px solid transparent;
+    text-decoration: none;
+}
+
+button:not(.active):hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 5px;
 }
 
 button.active {
