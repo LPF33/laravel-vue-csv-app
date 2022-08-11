@@ -18,7 +18,10 @@
             @click="toggleClicked('add')"
             :class="{ active: activeElem === 'add' }"
         >
-            <font-awesome-icon icon="fa-solid fa-file-circle-plus" class="icon"/>
+            <font-awesome-icon
+                icon="fa-solid fa-file-circle-plus"
+                class="icon"
+            />
             <span>Add Data</span>
         </button>
         <a href="/api/export">
@@ -50,13 +53,14 @@ export default defineComponent({
 
 <style scoped>
 nav {
-    padding: 20px 20px 10px;
+    padding: 10px 0;
     background-color: var(--header-color);
 }
 
-button, a {
+button,
+a {
     background-color: transparent;
-    width: 100px;
+    width: 80px;
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -76,11 +80,26 @@ button.active {
 }
 
 span {
-    font-size: 1.2rem;
+    font-size: 0.8rem;
     margin-top: 5px;
 }
 
 .icon {
     font-size: 1.5rem;
+}
+
+@media screen and (min-width: 440px) {
+    nav {
+        padding: 20px 20px 10px;
+    }
+
+    button,
+    a {
+        width: 100px;
+    }
+
+    span {
+        font-size: 1.2rem;
+    }
 }
 </style>

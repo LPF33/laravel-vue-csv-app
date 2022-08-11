@@ -6,8 +6,8 @@
         :header="data.header"
         :body="data.body"
     />
-    <ChartUnit v-show="show === 'chart'" />
-    <AddData v-show="show === 'add'" :columns="data.header"/>
+    <ChartUnit v-show="show === 'chart'" :table="data.body" />
+    <AddData v-show="show === 'add'" :columns="data.header" />
 </template>
 
 <script setup lang="ts">

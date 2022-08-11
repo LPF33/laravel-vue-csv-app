@@ -17,6 +17,18 @@ export type HeaderTuple = [
     "Bildname"
 ];
 
+export type TCheckValues = Omit<
+    HeaderTuple,
+    | "Ärmel"
+    | "Bein"
+    | "Kragen"
+    | "Herstellung"
+    | "Taschenart"
+    | "Grammatur"
+    | "Ursprungsland"
+    | "Bildname"
+>;
+
 export interface IArticle {
     Hauptartikelnr: string;
     Artikelname: string;
@@ -41,4 +53,4 @@ export interface AxiosReponse {
     body: IArticle[];
 }
 
-export type TToggleMenu = "table" | "chart";
+export type TToggleMenu = "table" | "chart" | "add";

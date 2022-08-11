@@ -14,11 +14,21 @@ import {
     faChartColumn,
     faFileCsv,
     faFileCirclePlus,
-    faDownload
+    faDownload,
+    faFilter,
+    faFloppyDisk,
 } from "@fortawesome/free-solid-svg-icons";
 
 /* add icons to the library */
-library.add(faTableList, faChartColumn, faFileCsv, faFileCirclePlus, faDownload);
+library.add(
+    faTableList,
+    faChartColumn,
+    faFileCsv,
+    faFileCirclePlus,
+    faDownload,
+    faFilter,
+    faFloppyDisk
+);
 
 import App from "./App.vue";
 
