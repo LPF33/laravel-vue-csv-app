@@ -19,7 +19,7 @@
         <div>
             <button
                 v-for="(item, index) in pages"
-                :key="index"
+                :key="item + index"
                 @click="setPage(item)"
                 :class="{ active: item === currentPage }"
             >
@@ -49,7 +49,6 @@ export default defineComponent({
     },
     setup(props) {
         const itemsPerPage = 15;
-        const maxPage = Math.ceil(props.body.length / itemsPerPage);
         const currentPage = ref(1);
 
         const currentBody = computed(() =>
@@ -60,7 +59,8 @@ export default defineComponent({
         );
 
         const pages = computed(() => {
-            const pagesArr = [1];
+            const maxPage = Math.ceil(props.body.length / itemsPerPage);
+            const pagesArr: number[] = [1];
             for (
                 let i = currentPage.value - 3 < 1 ? 1 : currentPage.value - 3;
                 i <=
