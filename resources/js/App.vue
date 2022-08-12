@@ -7,7 +7,7 @@
         :body="data.body"
     />
     <ChartUnit v-show="show === 'chart'" :table="data.body" />
-    <AddData v-show="show === 'add'" :columns="data.header" />
+    <AddData v-show="show === 'add'" :columns="data.header" @add-row="addRow" />
 </template>
 
 <script setup lang="ts">
@@ -37,6 +37,11 @@ const show = ref<TToggleMenu>("table");
 
 const toggle = (str: TToggleMenu): void => {
     show.value = str;
+};
+
+const addRow = (row: IArticle) => {
+    console.log(row);
+    data.body.push(row);
 };
 </script>
 

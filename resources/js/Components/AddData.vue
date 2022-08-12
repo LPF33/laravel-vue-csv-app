@@ -7,7 +7,9 @@
         >
             <label :for="item">{{ item }}</label>
             <input type="text" :id="item" v-model="data[item]" />
-            <p v-if="error[item]" class="form-error">{{ error[item] }}</p>
+            <p v-if="item in error" class="form-error">
+                {{ error[item] }}
+            </p>
         </div>
         <div class="button-wrapper">
             <button type="submit">
@@ -41,11 +43,11 @@ export default defineComponent({
     name: "AddData",
     props: {
         columns: {
-            type: Object as PropType<HeaderTuple>,
-            required: true,
+            type: Object as PropType<HeaderTuple | []>,
         },
     },
-    setup() {
+    emit: ["add-row"],
+    setup(props, { emit }) {
         const data = reactive<IArticle>({
             Hauptartikelnr: "",
             Artikelname: "",
@@ -116,6 +118,7 @@ export default defineComponent({
                 checkIfEmpty();
                 timeoutIcon("error");
             } else if (response.status === 200 && response.data.ok) {
+                emit("add-row", {...data});
                 clearInputs();
                 timeoutIcon("check");
             } else {
