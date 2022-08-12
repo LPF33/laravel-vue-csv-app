@@ -35,7 +35,17 @@ export interface IArticle {
     Bildname: string;
 }
 
-export type TFormError = Omit<IArticle, "Ärmel"|"Bein"|"Kragen"|"Herstellung"|"Taschenart"|"Grammatur"|"Ursprungsland"|"Bildname">;
+export type TFormError = Omit<
+    IArticle,
+    | "Ärmel"
+    | "Bein"
+    | "Kragen"
+    | "Herstellung"
+    | "Taschenart"
+    | "Grammatur"
+    | "Ursprungsland"
+    | "Bildname"
+>;
 
 export interface AxiosReponse {
     header: HeaderTuple;

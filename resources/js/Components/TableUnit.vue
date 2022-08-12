@@ -1,18 +1,36 @@
 <template>
-    <table>
-        <thead>
-            <tr>
-                <th v-for="(item, index) in header" :key="index">{{ item }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <TableRow v-for="(row, index) in body" :key="index" :row="row" />
-        </tbody>
-    </table>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th v-for="(item, index) in header" :key="index">
+                        {{ item }}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <TableRow
+                    v-for="(row, index) in currentBody"
+                    :key="row.Hauptartikelnr + index"
+                    :row="row"
+                />
+            </tbody>
+        </table>
+        <div>
+            <button
+                v-for="(item, index) in pages"
+                :key="index"
+                @click="setPage(item)"
+                :class="{ active: item === currentPage }"
+            >
+                {{ item }}
+            </button>
+        </div>
+    </main>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, ref } from "vue";
 import { IArticle } from "../types";
 import TableRow from "./TableRow.vue";
 
@@ -28,6 +46,40 @@ export default defineComponent({
             type: Array as PropType<IArticle[]>,
             required: true,
         },
+    },
+    setup(props) {
+        const itemsPerPage = 15;
+        const maxPage = Math.ceil(props.body.length / itemsPerPage);
+        const currentPage = ref(1);
+
+        const currentBody = computed(() =>
+            props.body.slice(
+                itemsPerPage * (currentPage.value - 1),
+                itemsPerPage * currentPage.value
+            )
+        );
+
+        const pages = computed(() => {
+            const pagesArr = [1];
+            for (
+                let i = currentPage.value - 3 < 1 ? 1 : currentPage.value - 3;
+                i <=
+                (currentPage.value + 3 > maxPage
+                    ? maxPage
+                    : currentPage.value + 3);
+                i++
+            ) {
+                pagesArr.push(i);
+            }
+            pagesArr.push(maxPage);
+            return [...new Set(pagesArr)];
+        });
+
+        function setPage(num: number) {
+            currentPage.value = num;
+        }
+
+        return { currentBody, setPage, currentPage, pages };
     },
 });
 </script>
@@ -78,5 +130,22 @@ tbody tr:last-of-type {
 tbody tr.active {
     font-weight: bold;
     color: #009879;
+}
+
+table + div > button {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    background-color: var(--inactive-tab);
+    color: black;
+}
+
+table + div > button:not(.active):hover {
+    cursor: pointer;
+    background-color: var(--active-tab);
+}
+
+table + div > button.active {
+    background-color: var(--active-tab);
 }
 </style>
