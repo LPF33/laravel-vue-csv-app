@@ -53,3 +53,9 @@ export interface AxiosReponse {
 }
 
 export type TToggleMenu = "table" | "chart" | "add";
+
+export interface IUpdateValueEmit {
+    rowIndex: number;
+    columnName: keyof IArticle;
+    columnData: string;
+}

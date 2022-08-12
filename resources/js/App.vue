@@ -60,11 +60,10 @@ const addRow = (row: IArticle) => {
     --color-white: #fff;
     --active-tab: #fff;
     --inactive-tab: #eeeeeeab;
-    --table-hover: #6ebf8b;
+    --table-hover: #cff7dd62;
 }
 
 body {
-    width: 100%;
     background-color: var(--header-color);
 }
 </style>

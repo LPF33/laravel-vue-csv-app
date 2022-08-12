@@ -118,7 +118,7 @@ export default defineComponent({
                 checkIfEmpty();
                 timeoutIcon("error");
             } else if (response.status === 200 && response.data.ok) {
-                emit("add-row", {...data});
+                emit("add-row", { ...data });
                 clearInputs();
                 timeoutIcon("check");
             } else {

@@ -20,3 +20,5 @@ Route::get('/read', [Controller::class, 'readCSV']);
 Route::get('/export', [Controller::class, 'exportCSV']);
 
 Route::post('/add', [Controller::class, 'appendCSV']);
+
+Route::post('/write', [Controller::class, 'writeCSV']);

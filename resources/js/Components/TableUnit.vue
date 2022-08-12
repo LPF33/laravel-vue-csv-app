@@ -1,27 +1,31 @@
 <template>
     <main>
-        <table>
-            <thead>
-                <tr>
-                    <th v-for="(item, index) in header" :key="index">
-                        {{ item }}
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <TableRow
-                    v-for="(row, index) in currentBody"
-                    :key="row.Hauptartikelnr + index"
-                    :row="row"
-                />
-            </tbody>
-        </table>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th v-for="(item, index) in header" :key="index">
+                            {{ item }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <TableRow
+                        v-for="(row, index) in currentBody"
+                        :key="row.Hauptartikelnr + index"
+                        :row="row"
+                        :index="itemsPerPage * (currentPage - 1) + index"
+                    />
+                </tbody>
+            </table>
+        </div>
         <div>
             <button
                 v-for="(item, index) in pages"
                 :key="item + index"
                 @click="setPage(item)"
                 :class="{ active: item === currentPage }"
+                class="pagination"
             >
                 {{ item }}
             </button>
@@ -79,18 +83,22 @@ export default defineComponent({
             currentPage.value = num;
         }
 
-        return { currentBody, setPage, currentPage, pages };
+        return { currentBody, setPage, currentPage, pages, itemsPerPage };
     },
 });
 </script>
 
 <style>
+main > div:first-child {
+    width: 100vw;
+    overflow-x: scroll;
+}
+
 table {
     border-collapse: collapse;
     margin: 0;
     font-size: 0.9em;
     font-family: sans-serif;
-    width: 100%;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -107,7 +115,8 @@ thead tr {
 
 th,
 td {
-    padding: 12px 10px;
+    padding: 2px 24px 2px 2px;
+    line-height: 2rem;
 }
 
 tbody tr {
@@ -132,7 +141,7 @@ tbody tr.active {
     color: #009879;
 }
 
-table + div > button {
+button.pagination {
     padding: 10px;
     margin: 10px;
     border-radius: 5px;
@@ -140,12 +149,12 @@ table + div > button {
     color: black;
 }
 
-table + div > button:not(.active):hover {
+button.pagination:not(.active):hover {
     cursor: pointer;
     background-color: var(--active-tab);
 }
 
-table + div > button.active {
+button.pagination.active {
     background-color: var(--active-tab);
 }
 </style>
