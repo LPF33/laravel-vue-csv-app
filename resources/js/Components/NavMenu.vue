@@ -7,13 +7,7 @@
             <font-awesome-icon icon="fa-solid fa-table-list" class="icon" />
             <span>Table</span>
         </button>
-        <button
-            @click="toggleClicked('chart')"
-            :class="{ active: activeElem === 'chart' }"
-        >
-            <font-awesome-icon icon="fa-solid fa-chart-column" class="icon" />
-            <span>Chart</span>
-        </button>
+
         <button
             @click="toggleClicked('add')"
             :class="{ active: activeElem === 'add' }"
@@ -22,7 +16,13 @@
                 icon="fa-solid fa-file-circle-plus"
                 class="icon"
             />
-            <span>Add Data</span>
+            <span>Add Data</span></button
+        ><button
+            @click="toggleClicked('chart')"
+            :class="{ active: activeElem === 'chart' }"
+        >
+            <font-awesome-icon icon="fa-solid fa-chart-column" class="icon" />
+            <span>Chart</span>
         </button>
         <a href="/api/export">
             <font-awesome-icon icon="fa-solid fa-download" class="icon" />
