@@ -15,6 +15,7 @@
                         :key="row.Hauptartikelnr + index"
                         :row="row"
                         :index="itemsPerPage * (currentPage - 1) + index"
+                        @update-value="passValue"
                     />
                 </tbody>
             </table>
@@ -35,7 +36,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from "vue";
-import { IArticle } from "../types";
+import { IArticle, IUpdateValueEmit } from "../types";
 import TableRow from "./TableRow.vue";
 
 export default defineComponent({
@@ -51,7 +52,8 @@ export default defineComponent({
             required: true,
         },
     },
-    setup(props) {
+    emit: ["update-value"],
+    setup(props, { emit }) {
         const itemsPerPage = 15;
         const currentPage = ref(1);
 
@@ -83,7 +85,18 @@ export default defineComponent({
             currentPage.value = num;
         }
 
-        return { currentBody, setPage, currentPage, pages, itemsPerPage };
+        function passValue(event: IUpdateValueEmit) {
+            emit("update-value", event);
+        }
+
+        return {
+            itemsPerPage,
+            currentPage,
+            currentBody,
+            pages,
+            setPage,
+            passValue,
+        };
     },
 });
 </script>

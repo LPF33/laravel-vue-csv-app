@@ -84,8 +84,9 @@ class Controller extends BaseController
         fclose($newFileResource);
         fclose($fileResource);
 
-        unlink(self::FILE_PATH);
-        rename(self::NEW_FILE_PATH, self::FILE_PATH);
+        if(!unlink(self::FILE_PATH) || !rename(self::NEW_FILE_PATH, self::FILE_PATH)) {
+            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
+        }
 
         return response()->json(["ok"=>"correct input"]);
     }

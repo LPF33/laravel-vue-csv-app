@@ -5,6 +5,7 @@
         v-show="show === 'table'"
         :header="data.header"
         :body="data.body"
+        @update-value="updateValue"
     />
     <ChartUnit v-show="show === 'chart'" :table="data.body" />
     <AddData v-show="show === 'add'" :columns="data.header" @add-row="addRow" />
@@ -13,7 +14,13 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import axios from "axios";
-import { HeaderTuple, IArticle, AxiosReponse, TToggleMenu } from "./types";
+import {
+    HeaderTuple,
+    IArticle,
+    AxiosReponse,
+    TToggleMenu,
+    IUpdateValueEmit,
+} from "./types";
 import TableUnit from "./Components/TableUnit.vue";
 import NavMenu from "./Components/NavMenu.vue";
 import ChartUnit from "./Components/ChartUnit.vue";
@@ -40,8 +47,11 @@ const toggle = (str: TToggleMenu): void => {
 };
 
 const addRow = (row: IArticle) => {
-    console.log(row);
     data.body.push(row);
+};
+
+const updateValue = (event: IUpdateValueEmit) => {
+    data.body[event.rowIndex][event.columnName] = event.columnData;
 };
 </script>
 

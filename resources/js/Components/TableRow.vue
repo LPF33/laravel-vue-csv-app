@@ -30,13 +30,18 @@ export default defineComponent({
             required: true,
         },
     },
-    setup(props) {
+    emit: ["update-value"],
+    setup(props, { emit }) {
         async function save(event: IUpdateValueEmit) {
             const response = await axios.post("/api/write", {
                 index: event.rowIndex,
                 data: { ...props.row, [event.columnName]: event.columnData },
             });
-            console.log(response);
+            if (response.status === 200 && response.data.ok) {
+                emit("update-value", event);
+            } else {
+                console.log(response);
+            }
         }
 
         return { save };
