@@ -59,3 +59,10 @@ export interface IUpdateValueEmit {
     columnName: keyof IArticle;
     columnData: string;
 }
+
+export type TFilterChart =
+    | "Geschlecht"
+    | "Hersteller"
+    | "Herstellung"
+    | "Material"
+    | "Ursprungsland";

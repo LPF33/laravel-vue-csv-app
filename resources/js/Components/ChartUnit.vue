@@ -24,7 +24,7 @@
 import { defineComponent, PropType, reactive, ref, toRefs, watch } from "vue";
 import { Pie } from "vue-chartjs";
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from "chart.js";
-import { IArticle } from "../types";
+import { IArticle, TFilterChart } from "../types";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -38,7 +38,7 @@ export default defineComponent({
         },
     },
     setup(props) {
-        const filterValues = reactive([
+        const filterValues = reactive<TFilterChart[]>([
             "Geschlecht",
             "Hersteller",
             "Herstellung",
@@ -91,7 +91,7 @@ export default defineComponent({
             chartId: "pie-chart",
         });
 
-        function filter(str) {
+        function filter(str: TFilterChart) {
             activeFilter.value = str;
             const filteredArray = props.table.map((val) => {
                 if (!val[str]) {
@@ -108,7 +108,7 @@ export default defineComponent({
                     obj[item] = 0;
                 }
                 return obj;
-            }, {}) as { [key: string]: number }[];
+            }, {} as { [key: string]: number });
 
             data.chartData.labels = labels as never[];
             data.chartData.datasets[0].data = Object.values(
