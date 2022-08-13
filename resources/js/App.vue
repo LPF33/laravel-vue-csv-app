@@ -9,6 +9,7 @@
     />
     <ChartUnit v-show="show === 'chart'" :table="data.body" />
     <AddData v-show="show === 'add'" :columns="data.header" @add-row="addRow" />
+    <ErrorMessage v-if="error" :error-message="error" />
 </template>
 
 <script setup lang="ts">
@@ -26,6 +27,7 @@ import NavMenu from "./Components/NavMenu.vue";
 import ChartUnit from "./Components/ChartUnit.vue";
 import HeadLine from "./Components/HeadLine.vue";
 import AddData from "./Components/AddData.vue";
+import ErrorMessage from "./Components/ErrorMessage.vue";
 
 const data = reactive({
     header: [] as HeaderTuple | [],
@@ -34,11 +36,18 @@ const data = reactive({
 
 const show = ref<TToggleMenu>("table");
 
+const error = ref("");
+
 (async () => {
-    const response = await axios.get<AxiosReponse>("/api/read");
-    if (response.status === 200 && response.data) {
-        data.header = response.data.header;
-        data.body = response.data.body;
+    try {
+        const response = await axios.get<AxiosReponse>("/api/read");
+        if (response.status === 200 && response.data) {
+            data.header = response.data.header;
+            data.body = response.data.body;
+            error.value = "";
+        }
+    } catch (err) {
+        error.value = "Server Error! Please try again!";
     }
 })();
 
@@ -71,6 +80,8 @@ const updateValue = (event: IUpdateValueEmit) => {
     --active-tab: #fff;
     --inactive-tab: #eeeeeeab;
     --table-hover: #cff7dd62;
+    --color-error: #023e8a;
+    --color-green: #008000;
 }
 
 body {

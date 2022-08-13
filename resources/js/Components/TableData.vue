@@ -29,6 +29,10 @@ export default defineComponent({
             type: Number,
             required: true,
         },
+        responseError: {
+            type: Boolean,
+            required: true,
+        },
     },
     emit: ["update-value"],
     setup(props, { emit }) {
@@ -57,6 +61,15 @@ export default defineComponent({
 
         watch(data, () => (iconCheck.value = true));
 
+        watch(
+            () => props.responseError,
+            (newValue) => {
+                if (newValue === true) {
+                    data.value = props.columnData;
+                }
+            }
+        );
+
         return { data, show, iconCheck, input, setFocus, edit, save };
     },
 });
@@ -78,7 +91,7 @@ input {
     top: 50%;
     right: 0;
     transform: translate(0, -50%);
-    color: green;
+    color: var(--color-green);
     font-size: 1.5rem;
     cursor: pointer;
 }

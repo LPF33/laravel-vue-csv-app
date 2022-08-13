@@ -6,6 +6,7 @@
             :column-data="value"
             :column-name="key"
             :row-index="index"
+            :response-error="responseError"
             @update-value="save"
         />
     </tr>
@@ -13,7 +14,7 @@
 
 <script lang="ts">
 import axios from "axios";
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, ref } from "vue";
 import { IArticle, IUpdateValueEmit } from "../types";
 import TableData from "./TableData.vue";
 
@@ -32,19 +33,29 @@ export default defineComponent({
     },
     emit: ["update-value"],
     setup(props, { emit }) {
+        const responseError = ref<boolean>(false);
+
         async function save(event: IUpdateValueEmit) {
-            const response = await axios.post("/api/write", {
-                index: event.rowIndex,
-                data: { ...props.row, [event.columnName]: event.columnData },
-            });
-            if (response.status === 200 && response.data.ok) {
-                emit("update-value", event);
-            } else {
-                console.log(response);
+            try {
+                const response = await axios.post("/api/write", {
+                    index: event.rowIndex,
+                    data: {
+                        ...props.row,
+                        [event.columnName]: event.columnData,
+                    },
+                });
+                if (response.status === 200 && response.data.ok) {
+                    emit("update-value", event);
+                    responseError.value = false;
+                } else {
+                    responseError.value = true;
+                }
+            } catch (error) {
+                responseError.value = true;
             }
         }
 
-        return { save };
+        return { responseError, save };
     },
 });
 </script>

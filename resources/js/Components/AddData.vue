@@ -113,15 +113,19 @@ export default defineComponent({
                 return;
             }
 
-            const response = await axios.post("/api/add", data);
-            if (response.status === 200 && response.data.error) {
-                checkIfEmpty();
-                timeoutIcon("error");
-            } else if (response.status === 200 && response.data.ok) {
-                emit("add-row", { ...data });
-                clearInputs();
-                timeoutIcon("check");
-            } else {
+            try {
+                const response = await axios.post("/api/add", data);
+                if (response.status === 200 && response.data.error) {
+                    checkIfEmpty();
+                    timeoutIcon("error");
+                } else if (response.status === 200 && response.data.ok) {
+                    emit("add-row", { ...data });
+                    clearInputs();
+                    timeoutIcon("check");
+                } else {
+                    timeoutIcon("error");
+                }
+            } catch (error) {
                 timeoutIcon("error");
             }
         }
@@ -160,11 +164,11 @@ input[type="text"] {
     padding: 2px;
 }
 .error {
-    color: #023e8a;
+    color: var(--color-error);
 }
 
 .error input[type="text"] {
-    border: 2px solid #023e8a;
+    border: 2px solid var(--color-error);
 }
 
 .form-error {
@@ -196,10 +200,10 @@ button span {
 }
 
 .icon-check {
-    color: green;
+    color: var(--color-green);
 }
 
 .icon-error {
-    color: #023e8a;
+    color: var(--color-error);
 }
 </style>
