@@ -1,20 +1,18 @@
 <template>
-    <td>
-        <input type="text" v-model="data" @focus="edit(true)" />
-        <span>
-            <font-awesome-icon
-                v-if="show"
-                icon="fa-solid fa-circle-check"
-                class="icon"
-                @click="save"
-            />
+    <td @mouseenter="edit(true)" @mouseleave="edit(false)">
+        <input type="text" v-model="data" ref="input" />
+        <span v-if="show && iconCheck" @click="save">
+            <font-awesome-icon icon="fa-solid fa-circle-check" class="icon" />
+        </span>
+        <span v-if="show && !iconCheck" @click="setFocus">
+            <font-awesome-icon icon="fa-solid fa-pen-to-square" class="icon" />
         </span>
     </td>
 </template>
 
 <script lang="ts">
 import { IArticle, IUpdateValueEmit } from "@/types";
-import { defineComponent, ref, PropType } from "vue";
+import { defineComponent, ref, PropType, watch } from "vue";
 
 export default defineComponent({
     name: "TableDate",
@@ -36,9 +34,14 @@ export default defineComponent({
     setup(props, { emit }) {
         const data = ref<string>(props.columnData);
         const show = ref<boolean>(false);
+        const iconCheck = ref<boolean>(false);
+        const input = ref<HTMLInputElement>();
+
+        function setFocus() {
+            input.value?.focus();
+        }
 
         function edit(val: boolean) {
-            console.log(val);
             show.value = val;
         }
 
@@ -48,9 +51,13 @@ export default defineComponent({
                 columnName: props.columnName,
                 columnData: data.value,
             } as IUpdateValueEmit);
+            edit(false);
+            iconCheck.value = false;
         }
 
-        return { data, show, edit, save };
+        watch(data, () => (iconCheck.value = true));
+
+        return { data, show, iconCheck, input, setFocus, edit, save };
     },
 });
 </script>
