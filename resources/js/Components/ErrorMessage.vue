@@ -4,7 +4,7 @@
             icon="fa-solid fa-triangle-exclamation"
             class="icon-error"
         />
-        <strong>{{errorMessage}}</strong>
+        <strong>{{ errorMessage }}</strong>
     </div>
 </template>
 
