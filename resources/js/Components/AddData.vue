@@ -82,7 +82,8 @@ export default defineComponent({
 
         function checkIfEmpty(): boolean {
             let hasError = false;
-            for (const elem in error) {
+            let elem: keyof TFormError;
+            for (elem in error) {
                 if (data[elem] === "") {
                     error[elem] = "Please fill in this field";
                     hasError = true;
@@ -94,11 +95,13 @@ export default defineComponent({
         }
 
         function clearInputs() {
-            for (const elem in data) {
+            let elem: keyof IArticle;
+            for (elem in data) {
                 data[elem] = "";
             }
-            for (const elem in error) {
-                error[elem] = "";
+            let err: keyof TFormError;
+            for (err in error) {
+                error[err] = "";
             }
         }
 
