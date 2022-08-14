@@ -8,17 +8,6 @@ See also: [Aufgabe](https://github.com/LPF33/laravel-vue-csv-app/blob/master/Auf
 - PHP / [Laravel 9](https://laravel.com/)
 - [Vite](https://laravel.com/docs/9.x/vite)
 
-## Laravel Routes
-
-  - API: In folder **routes/api.php**
-    - "/api/read" (get-Route)
-    - "/api/write" (post-Route)
-    - "/api/add" (post-Route)
-    - "/api/export" (get-Route)
-  
-  - Web: In folder **routes/web.php**
-    - "/" (get-Route)
-
 ## Run project local
 
 ```console
@@ -72,3 +61,14 @@ $ npm run lint
 https://laravel.com/docs/9.x/vite
 
 https://vitejs.dev/config/
+
+## Laravel Routes
+
+  - API: In folder **routes/api.php**
+    - "/api/read" (get-Route)
+    - "/api/write" (post-Route)
+    - "/api/add" (post-Route)
+    - "/api/export" (get-Route)
+  
+  - Web: In folder **routes/web.php**
+    - "/" (get-Route)
