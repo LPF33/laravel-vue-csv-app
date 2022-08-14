@@ -193,6 +193,11 @@ button {
     cursor: pointer;
 }
 
+button:hover {
+    background-color: var(--button-hover);
+    border-radius: 5px;
+}
+
 button span {
     font-size: 1.2rem;
     margin-top: 5px;

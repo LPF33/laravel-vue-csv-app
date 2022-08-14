@@ -7,7 +7,6 @@
             <font-awesome-icon icon="fa-solid fa-table-list" class="icon" />
             <span>Table</span>
         </button>
-
         <button
             @click="toggleClicked('add')"
             :class="{ active: activeElem === 'add' }"
@@ -17,6 +16,12 @@
                 class="icon"
             />
             <span>Add Data</span></button
+        ><button
+            @click="toggleClicked('upload')"
+            :class="{ active: activeElem === 'upload' }"
+        >
+            <font-awesome-icon icon="fa-solid fa-upload" class="icon" />
+            <span>Upload</span></button
         ><button
             @click="toggleClicked('chart')"
             :class="{ active: activeElem === 'chart' }"
@@ -60,7 +65,7 @@ nav {
 button,
 a {
     background-color: transparent;
-    width: 80px;
+    width: 60px;
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -71,7 +76,7 @@ a {
 
 button:not(.active):hover,
 a:hover {
-    background-color: rgba(255, 255, 255, 0.4);
+    background-color: var(--button-hover);
     border-radius: 5px;
     cursor: pointer;
 }
@@ -90,7 +95,14 @@ span {
     font-size: 1.5rem;
 }
 
-@media screen and (min-width: 440px) {
+@media screen and (min-width: 400px) {
+    button,
+    a {
+        width: 80px;
+    }
+}
+
+@media screen and (min-width: 540px) {
     nav {
         padding: 20px 20px 10px;
     }

@@ -7,8 +7,9 @@
         :body="data.body"
         @update-value="updateValue"
     />
-    <ChartUnit v-show="show === 'chart'" :table="data.body" />
     <AddData v-show="show === 'add'" :columns="data.header" @add-row="addRow" />
+    <ChartUnit v-show="show === 'chart'" :table="data.body" />
+    <UploadFile v-show="show === 'upload'" @goto-table="toggle('table')" />
     <ErrorMessage v-if="error" :error-message="error" />
 </template>
 
@@ -22,10 +23,11 @@ import {
     TToggleMenu,
     IUpdateValueEmit,
 } from "./types";
-import TableUnit from "./Components/TableUnit.vue";
-import NavMenu from "./Components/NavMenu.vue";
-import ChartUnit from "./Components/ChartUnit.vue";
 import HeadLine from "./Components/HeadLine.vue";
+import NavMenu from "./Components/NavMenu.vue";
+import UploadFile from "./Components/UploadFile.vue";
+import TableUnit from "./Components/TableUnit.vue";
+import ChartUnit from "./Components/ChartUnit.vue";
 import AddData from "./Components/AddData.vue";
 import ErrorMessage from "./Components/ErrorMessage.vue";
 
@@ -80,6 +82,7 @@ const updateValue = (event: IUpdateValueEmit) => {
     --active-tab: #fff;
     --inactive-tab: #eeeeeeab;
     --table-hover: #cff7dd62;
+    --button-hover: #ffffff66;
     --color-error: #023e8a;
     --color-green: #008000;
 }

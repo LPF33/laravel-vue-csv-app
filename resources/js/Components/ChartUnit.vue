@@ -145,6 +145,11 @@ export default defineComponent({
     border-bottom: 2px solid transparent;
 }
 
+#chart-filter button:not(.active):hover {
+    background-color: var(--button-hover);
+    border-radius: 5px;
+}
+
 #chart-filter button.active {
     color: var(--active-tab);
     border-bottom: 2px solid var(--active-tab);

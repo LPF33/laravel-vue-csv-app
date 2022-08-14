@@ -52,7 +52,7 @@ export interface AxiosReponse {
     body: IArticle[];
 }
 
-export type TToggleMenu = "table" | "chart" | "add";
+export type TToggleMenu = "table" | "chart" | "add" | "upload";
 
 export interface IUpdateValueEmit {
     rowIndex: number;
