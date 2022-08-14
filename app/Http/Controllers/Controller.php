@@ -7,10 +7,13 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    const FOLDER_PATH = __DIR__.'/../../Assets';
 
     const FILE_PATH = __DIR__.'/../../Assets/Artikel.csv';
 
@@ -158,5 +161,36 @@ class Controller extends BaseController
         }
 
         return response()->download(self::FILE_PATH, 'Artikel.csv', ['Content-type' => 'text/csv']);
+    }
+
+    /**
+     * Import CSV file
+     *
+     * Check if file is present in request and has been uploaded with HTTP and no error occurred.
+     * Check for MIME type (not safe value). Delete old Artikel.csv and move uploaded file to Assets-folder.
+     */
+    public function importCSV(Request $request)
+    {
+        try {
+            if (! $request->hasFile('file') || ! $request->file('file')->isValid()) {
+                return response('Bad request', 400);
+            }
+
+            $file = $request->file('file');
+
+            if ($file->getClientMimeType() !== 'text/csv') {
+                return response()->json(['error' => 'Incorrect file type']);
+            }
+
+            if (! unlink(self::FILE_PATH)) {
+                return response('Server error', 500);
+            }
+
+            $file->move(self::FOLDER_PATH, 'Artikel.csv');
+
+            return response()->json(['ok' => 'correct input']);
+        } catch (FileException $err) {
+            return response('Server error', 500);
+        }
     }
 }
