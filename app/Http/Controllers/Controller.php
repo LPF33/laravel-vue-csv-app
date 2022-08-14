@@ -5,21 +5,32 @@ namespace App\Http\Controllers;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    const FILE_PATH = __DIR__ . '/../../Assets/Artikel.csv';
-    const NEW_FILE_PATH = __DIR__ . '/../../Assets/NewArtikel.csv';
+    const FILE_PATH = __DIR__.'/../../Assets/Artikel.csv';
 
-    public function readCSV(){
-        $fileResource = fopen(self::FILE_PATH, "r");
+    const NEW_FILE_PATH = __DIR__.'/../../Assets/NewArtikel.csv';
 
-        if($fileResource === false) {
-            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
+    /**
+     * Only read the CSV file
+     *
+     * Test, if file can be opened. If not, send a 500 Internal Server Error.
+     * Create associative array, to store seperated CSV table header and body.
+     * Iterate over file, read every line. Store first line in $tableArray["header"].
+     * Other lines store as Array in body, with the depending key from header.
+     * Send response as json.
+     */
+    public function readCSV()
+    {
+        $fileResource = fopen(self::FILE_PATH, 'r');
+
+        if ($fileResource === false) {
+            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
         $tableArray = [
@@ -28,16 +39,16 @@ class Controller extends BaseController
         ];
         $rowCounter = 0;
 
-        while (!feof($fileResource) && ($rowCSV = fgetcsv($fileResource,0,";")) !== false) {
-            if($rowCounter === 0) {
+        while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, ';')) !== false) {
+            if ($rowCounter === 0) {
                 $tableHeader = [];
-                foreach($rowCSV as $key) {
+                foreach ($rowCSV as $key) {
                     $tableHeader[] = $key;
                 }
                 $tableArray['header'] = $tableHeader;
-            }else {
+            } else {
                 $newRow = [];
-                for($i=0; $i < count($rowCSV); $i++) {
+                for ($i = 0; $i < count($rowCSV); $i++) {
                     $newRow[$tableArray['header'][$i]] = trim($rowCSV[$i]);
                 }
                 array_push($tableArray['body'], $newRow);
@@ -49,79 +60,103 @@ class Controller extends BaseController
         return response()->json($tableArray);
     }
 
-    public function writeCSV(Request $request){
+    /**
+     * Read old file, write new file with new data. Delete old file. Rename new file.
+     *
+     * Read the Request. Validate index and data send with request.
+     * Open old (flag r) and new file (flag w). Read old file, write line to new file, when index reached, write data to new file.
+     * When old file is deleted and new file renamed, send response for success.
+     */
+    public function writeCSV(Request $request)
+    {
         $collection = $request->collect();
 
-        $rowIndex = filter_var($collection["index"], FILTER_VALIDATE_INT);
+        $rowIndex = filter_var($collection['index'], FILTER_VALIDATE_INT);
 
-        $newRow = collect($collection["data"])->map(fn($value) => trim(strip_tags($value)));
+        $newRow = collect($collection['data'])->map(fn ($value) => trim(strip_tags($value)));
 
-        if($newRow->filter(function($value, $key){
-            if(preg_match('/Ärmel|Bein|Kragen|Herstellung|Taschenart|Grammatur|Ursprungsland|Bildname/',$key)){
+        if ($newRow->filter(function ($value, $key) {
+            if (preg_match('/Ärmel|Bein|Kragen|Herstellung|Taschenart|Grammatur|Ursprungsland|Bildname/', $key)) {
                 return false;
             }
+
             return true;
-        })->contains(fn($value) => $value === "") || $rowIndex === false){
-            return response()->json(["error"=>"Incorrect input"]);
+        })->contains(fn ($value) => $value === '') || $rowIndex === false) {
+            return response()->json(['error' => 'Incorrect input']);
         }
 
-        $fileResource = fopen(self::FILE_PATH, "r");
-        $newFileResource = fopen(self::NEW_FILE_PATH, "w");
+        $fileResource = fopen(self::FILE_PATH, 'r');
+        $newFileResource = fopen(self::NEW_FILE_PATH, 'w');
 
-        if($fileResource === false  || $newFileResource === false) {
-            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
+        if ($fileResource === false || $newFileResource === false) {
+            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
         $rowCounter = 0;
-        while (!feof($fileResource) && ($rowCSV = fgetcsv($fileResource,0,";")) !== false) {
-            if($rowCounter === $rowIndex + 1) {
-                fputcsv($newFileResource, [...$newRow->values()], ";");
-            }else {
-                fputcsv($newFileResource,$rowCSV, ";");
+        while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, ';')) !== false) {
+            if ($rowCounter === $rowIndex + 1) {
+                fputcsv($newFileResource, [...$newRow->values()], ';');
+            } else {
+                fputcsv($newFileResource, $rowCSV, ';');
             }
             $rowCounter++;
         }
         fclose($newFileResource);
         fclose($fileResource);
 
-        if(!unlink(self::FILE_PATH) || !rename(self::NEW_FILE_PATH, self::FILE_PATH)) {
-            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
+        if (! unlink(self::FILE_PATH) || ! rename(self::NEW_FILE_PATH, self::FILE_PATH)) {
+            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
-        return response()->json(["ok"=>"correct input"]);
+        return response()->json(['ok' => 'correct input']);
     }
 
-    public function appendCSV(Request $request){
+    /**
+     * Append a new row to CSV file.
+     *
+     * Validate data send with Request. Open file with flag a. Put data to end of file.
+     * When successful send response.
+     */
+    public function appendCSV(Request $request)
+    {
         $collection = $request->collect();
 
-        $newRow = $collection->map(fn($value) => strip_tags($value));
+        $newRow = $collection->map(fn ($value) => trim(strip_tags($value)));
 
-        if($newRow->filter(function($value, $key){
-            if(preg_match('/Ärmel|Bein|Kragen|Herstellung|Taschenart|Grammatur|Ursprungsland|Bildname/',$key)){
+        if ($newRow->filter(function ($value, $key) {
+            if (preg_match('/Ärmel|Bein|Kragen|Herstellung|Taschenart|Grammatur|Ursprungsland|Bildname/', $key)) {
                 return false;
             }
+
             return true;
-        })->contains(fn($value) => $value === "")){
-            return response()->json(["error"=>"Incorrect input", "data" => $newRow]);
+        })->contains(fn ($value) => $value === '')) {
+            return response()->json(['error' => 'Incorrect input', 'data' => $newRow]);
         }
 
-        $fileResource = fopen(self::FILE_PATH, "a");
+        $fileResource = fopen(self::FILE_PATH, 'a');
 
-        if($fileResource === false) {
-            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
+        if ($fileResource === false) {
+            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
-        fputcsv($fileResource, [...$newRow->values()], ";");
+        fputcsv($fileResource, [...$newRow->values()], ';');
 
         fclose($fileResource);
 
-        return response()->json(["ok"=>"correct input", "data" => $newRow]);
+        return response()->json(['ok' => 'correct input', 'data' => $newRow]);
     }
 
-    public function exportCSV() {
-        if(!file_exists(self::FILE_PATH)) {
-            return response(["error" => "Server error"], 500, ["Content-type" => "application/json"]);
+    /**
+     * Export CSV file and trigger download in browser.
+     *
+     * If file exists, use download function in response.
+     */
+    public function exportCSV()
+    {
+        if (! file_exists(self::FILE_PATH)) {
+            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
-        return response()->download(self::FILE_PATH, "Artikel.csv", ["Content-type"=>"text/csv"]);
+
+        return response()->download(self::FILE_PATH, 'Artikel.csv', ['Content-type' => 'text/csv']);
     }
 }
