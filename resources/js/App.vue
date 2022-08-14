@@ -9,7 +9,7 @@
     />
     <AddData v-show="show === 'add'" :columns="data.header" @add-row="addRow" />
     <ChartUnit v-show="show === 'chart'" :table="data.body" />
-    <UploadFile v-show="show === 'upload'" @goto-table="toggle('table')" />
+    <UploadFile v-if="show === 'upload'" @goto-table="goToTableAfterUpload" />
     <ErrorMessage v-if="error" :error-message="error" />
 </template>
 
@@ -40,7 +40,7 @@ const show = ref<TToggleMenu>("table");
 
 const error = ref("");
 
-(async () => {
+const getCSVData = async () => {
     try {
         const response = await axios.get<AxiosReponse>("/api/read");
         if (response.status === 200 && response.data) {
@@ -51,7 +51,9 @@ const error = ref("");
     } catch (err) {
         error.value = "Server Error! Please try again!";
     }
-})();
+};
+
+getCSVData();
 
 const toggle = (str: TToggleMenu): void => {
     show.value = str;
@@ -63,6 +65,11 @@ const addRow = (row: IArticle) => {
 
 const updateValue = (event: IUpdateValueEmit) => {
     data.body[event.rowIndex][event.columnName] = event.columnData;
+};
+
+const goToTableAfterUpload = () => {
+    getCSVData();
+    toggle("table");
 };
 </script>
 

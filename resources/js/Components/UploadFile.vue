@@ -13,7 +13,7 @@
             ref="inputRef"
             @change="selectFile"
         />
-        <div v-if="file">{{ file.name }} ausgewählt</div>
+        <p v-if="file">{{ file.name }} ausgewählt</p>
         <button type="submit">
             <font-awesome-icon icon="fa-solid fa-upload" class="icon" />
             <span>Upload file</span>
@@ -63,6 +63,7 @@ export default defineComponent({
                 error.value = "Server Error";
             }
         }
+
         return { inputRef, file, error, selectFile, uploadFile };
     },
 });
@@ -100,6 +101,10 @@ label {
 
 label:hover {
     background: var(--button-hover);
+}
+p {
+    text-align: center;
+    padding: 10px;
 }
 
 button {

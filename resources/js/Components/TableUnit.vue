@@ -12,7 +12,7 @@
                 <tbody>
                     <TableRow
                         v-for="(row, index) in currentBody"
-                        :key="row.Hauptartikelnr + index"
+                        :key="itemsPerPage * (currentPage - 1) + index"
                         :row="row"
                         :index="itemsPerPage * (currentPage - 1) + index"
                         @update-value="passValue"
