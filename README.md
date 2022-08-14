@@ -1,5 +1,7 @@
 # About project:
 
+Tabular representation of the data from the CSV file. Edit and add data from CSV file. Visualize data with a Pie-Chart. Download the CSV file.
+
 See also: [Aufgabe](https://github.com/LPF33/laravel-vue-csv-app/blob/master/Aufgabenergebnis.md)
 
 ## Tech Stack
