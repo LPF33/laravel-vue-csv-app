@@ -1,12 +1,13 @@
 {
     "private": true,
     "scripts": {
-        "dev": "concurrently  -n \"vite,typescript\" -c \"blue,green\" \"npm run vite --clearScreen false\" \"npm run tsc -w --preserveWatchOutput\"",
+        "dev": "vite --clearScreen false",
         "build": "vite build",
-        "vite": "vite",
+        "tsc": "tsc -w --preserveWatchOutput",
         "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
     },
     "devDependencies": {
+        "@babel/types": "^7.18.10",
         "@rushstack/eslint-patch": "^1.1.4",
         "@types/lodash": "^4.14.182",
         "@vue/eslint-config-prettier": "^7.0.0",
@@ -27,13 +28,9 @@
         "@vitejs/plugin-vue": "^3.0.1",
         "@vuedx/typescript-plugin-vue": "^0.7.5",
         "chart.js": "^3.9.1",
-        "concurrently": "^7.3.0",
         "typescript": "^4.7.4",
         "vue": "^3.2.36",
         "vue-chartjs": "^4.1.1",
         "vue-loader": "^17.0.0"
-    },
-    "workspaces": [
-        "resources"
-    ]
+    }
 }
