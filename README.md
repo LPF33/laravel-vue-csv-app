@@ -1,73 +1,72 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# About project:
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+See also: [Aufgabe](https://github.com/LPF33/laravel-vue-csv-app/blob/master/Aufgabenergebnis.md)
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- TypeScript / [Vue.js 3](https://vuejs.org/)
+- PHP / [Laravel 9](https://laravel.com/)
+- [Vite](https://laravel.com/docs/9.x/vite)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Laravel Routes
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+  API: In folder **routes/api.php**
+    - "/api/read" (get-Route)
+    - "/api/write" (post-Route)
+    - "/api/add" (post-Route)
+    - "/api/export" (get-Route)
+  Web: In folder **routes/web.php**
+    - "/" (get-Route)
 
-## Learning Laravel
+## Run project local
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```console
+$ git clone git@github.com:LPF33/laravel-vue-csv-app.git
+$ cd laravel-vue-csv-app
+$ npm install
+$ composer install
+$ composer run-script post-root-package-install & composer run-script post-create-project-cmd
+$ npm run build
+$ php artisan serve
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Development
 
-## Laravel Sponsors
+```console
+$ php artisan serve
+$ npm run dev
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## Linter
 
-### Premium Partners
+- Backend [Laravel Pint](https://laravel.com/docs/9.x/pint)
+- Frontend [Eslint](https://eslint.org/)
+  
+```console
+$ composer run-script lint 
+$ npm run lint
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+## Deployment
 
-## Contributing
+- Procfile for Apache Server (web: vendor/bin/heroku-php-apache2 public/)
+- In .env for Laravel/Vite [Custom Base URLs](https://laravel.com/docs/9.x/vite#custom-base-urls): ASSET_URL=https://example.com
+- Application [Key](https://laravel.com/docs/7.x/installation) for Laravel in .env 
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## How to install Vue 3 in Laravel 9 with Vite
 
-## Code of Conduct
+1. Install Laravel 9
+2. Install npm Dependencies
+3. Install Vue 3 (in folder **resources/js** lives your Vue App)
+   ```console
+   npm install vue@next vue-loader@next
+    ```
+4. Install Vite Plugin and set vite.config.js
+    ```console
+    @vitejs/plugin-vue
+    ```
+5. Connect Laravel blade file and use vite directive to add assets
+6. Start development servers
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
-
-
-## Install Laravel and Vue 
-npm install vue@next vue-loader@next
-npm i @vitejs/plugin-vue
-https://techvblogs.com/blog/how-to-install-vue-3-in-laravel-9-with-vite
-
-Vite’s --clearScreen and TypeScript’s --preserveWatchOutput flags ensure that they don’t both try to reset the terminal while watching, otherwise you’d only see one of the two’s output at a time.
+https://laravel.com/docs/9.x/vite
+https://vitejs.dev/config/
