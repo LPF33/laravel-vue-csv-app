@@ -7,6 +7,7 @@ See also: [Aufgabe](https://github.com/LPF33/laravel-vue-csv-app/blob/master/Auf
 - TypeScript / [Vue.js 3](https://vuejs.org/)
 - PHP / [Laravel 9](https://laravel.com/)
 - [Vite](https://laravel.com/docs/9.x/vite)
+- 3rd Party Libraries: [Chart.js](https://vue-chartjs.org/), [Fontawesome](https://fontawesome.com/icons)
 
 ## Run project local
 
