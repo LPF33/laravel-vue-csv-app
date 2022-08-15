@@ -4,7 +4,7 @@
         <span v-if="show && iconCheck" @click="save">
             <font-awesome-icon icon="fa-solid fa-circle-check" class="icon" />
         </span>
-        <span v-if="show && !iconCheck" @click="setFocus">
+        <span v-if="show && !iconCheck" @click="openAddData">
             <font-awesome-icon icon="fa-solid fa-pen-to-square" class="icon" />
         </span>
     </td>
@@ -34,7 +34,7 @@ export default defineComponent({
             required: true,
         },
     },
-    emit: ["update-value"],
+    emit: ["update-value", "open-add-data"],
     setup(props, { emit }) {
         const data = ref<string>(props.columnData);
         const show = ref<boolean>(false);
@@ -59,6 +59,10 @@ export default defineComponent({
             iconCheck.value = false;
         }
 
+        function openAddData() {
+            emit("open-add-data");
+        }
+
         watch(data, () => (iconCheck.value = true));
 
         watch(
@@ -70,7 +74,16 @@ export default defineComponent({
             }
         );
 
-        return { data, show, iconCheck, input, setFocus, edit, save };
+        return {
+            data,
+            show,
+            iconCheck,
+            input,
+            setFocus,
+            edit,
+            save,
+            openAddData,
+        };
     },
 });
 </script>

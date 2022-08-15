@@ -2,21 +2,22 @@
     <tr>
         <TableData
             v-for="(value, key) in row"
-            :key="index + key"
+            :key="index + value + Math.floor(Math.random() * 10000)"
             :column-data="value"
             :column-name="key"
             :row-index="index"
             :response-error="responseError"
-            @update-value="save"
+            @update-value="initAxios"
+            @open-add-data="openAddData"
         />
     </tr>
 </template>
 
 <script lang="ts">
-import axios from "axios";
-import { defineComponent, PropType, ref } from "vue";
-import { IArticle, IUpdateValueEmit } from "../types";
+import { defineComponent, PropType, watch } from "vue";
+import { IArticle, IUpdateValueEmit, IDataRowIndex } from "../types";
 import TableData from "./TableData.vue";
+import useAxios from "@/Composables/useAxios";
 
 export default defineComponent({
     name: "TableRow",
@@ -33,29 +34,30 @@ export default defineComponent({
     },
     emit: ["update-value"],
     setup(props, { emit }) {
-        const responseError = ref<boolean>(false);
+        const { responseData, responseError, fireAxios } =
+            useAxios<IDataRowIndex>("post");
 
-        async function save(event: IUpdateValueEmit) {
-            try {
-                const response = await axios.post("/api/write", {
-                    index: event.rowIndex,
-                    data: {
-                        ...props.row,
-                        [event.columnName]: event.columnData,
-                    },
-                });
-                if (response.status === 200 && response.data.ok) {
-                    emit("update-value", event);
-                    responseError.value = false;
-                } else {
-                    responseError.value = true;
-                }
-            } catch (error) {
-                responseError.value = true;
-            }
+        function initAxios(event: IUpdateValueEmit) {
+            fireAxios("/api/write", {
+                index: event.rowIndex,
+                data: {
+                    ...props.row,
+                    [event.columnName]: event.columnData,
+                },
+            });
         }
 
-        return { responseError, save };
+        function openAddData() {
+            emit("open-add-data", { index: props.index, data: props.row });
+        }
+
+        watch(responseData, (newValue) => {
+            if (newValue !== null) {
+                emit("update-value", newValue);
+            }
+        });
+
+        return { responseError, initAxios, openAddData };
     },
 });
 </script>

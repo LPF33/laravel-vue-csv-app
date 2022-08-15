@@ -19,6 +19,7 @@ import {
     faTriangleExclamation,
     faPenToSquare,
     faUpload,
+    faSquareXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 /* add icons to the library */
@@ -33,7 +34,8 @@ library.add(
     faCircleCheck,
     faTriangleExclamation,
     faPenToSquare,
-    faUpload
+    faUpload,
+    faSquareXmark
 );
 
 import App from "./App.vue";

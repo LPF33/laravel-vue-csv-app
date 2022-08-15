@@ -12,10 +12,15 @@
                 <tbody>
                     <TableRow
                         v-for="(row, index) in currentBody"
-                        :key="itemsPerPage * (currentPage - 1) + index"
+                        :key="
+                            itemsPerPage * (currentPage - 1) +
+                            index +
+                            Math.floor(Math.random() * 10000)
+                        "
                         :row="row"
                         :index="itemsPerPage * (currentPage - 1) + index"
                         @update-value="passValue"
+                        @open-add-data="openAddData"
                     />
                 </tbody>
             </table>
@@ -31,17 +36,26 @@
                 {{ item }}
             </button>
         </div>
+        <AddData
+            v-if="addDataSFC.open"
+            :embed="addDataSFC.open"
+            :index="addDataSFC.index"
+            :data="addDataSFC.data"
+            @close-add-data="addDataSFC.open = false"
+            @save-row="passValue"
+        />
     </main>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref } from "vue";
-import { IArticle, IUpdateValueEmit } from "../types";
+import { computed, defineComponent, PropType, reactive, ref } from "vue";
+import { IArticle, IDataRowIndex, TEmbedAddDataSFCProps } from "../types";
 import TableRow from "./TableRow.vue";
+import AddData from "./AddData.vue";
 
 export default defineComponent({
     name: "TableUnit",
-    components: { TableRow },
+    components: { TableRow, AddData },
     props: {
         header: {
             type: Array as PropType<string[]>,
@@ -56,6 +70,11 @@ export default defineComponent({
     setup(props, { emit }) {
         const itemsPerPage = 15;
         const currentPage = ref(1);
+        const addDataSFC = reactive<TEmbedAddDataSFCProps>({
+            open: false,
+            index: -1,
+            data: undefined,
+        });
 
         const currentBody = computed(() =>
             props.body.slice(
@@ -85,23 +104,38 @@ export default defineComponent({
             currentPage.value = num;
         }
 
-        function passValue(event: IUpdateValueEmit) {
+        function passValue(event: IDataRowIndex) {
             emit("update-value", event);
+            addDataSFC.open = false;
+            addDataSFC.index = -1;
+            addDataSFC.data = undefined;
+        }
+
+        function openAddData(event: IDataRowIndex) {
+            addDataSFC.index = event.index;
+            addDataSFC.data = event.data;
+            addDataSFC.open = true;
         }
 
         return {
             itemsPerPage,
             currentPage,
+            addDataSFC,
             currentBody,
             pages,
             setPage,
             passValue,
+            openAddData,
         };
     },
 });
 </script>
 
 <style>
+main {
+    position: relative;
+}
+
 main > div:first-child {
     width: 100vw;
     overflow-x: scroll;

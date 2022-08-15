@@ -124,7 +124,7 @@ class Controller extends BaseController
     {
         $collection = $request->collect();
 
-        $newRow = $collection->map(fn ($value) => trim(strip_tags($value)));
+        $newRow = collect($collection['data'])->map(fn ($value) => trim(strip_tags($value)));
 
         if ($newRow->filter(function ($value, $key) {
             if (preg_match('/Ärmel|Bein|Kragen|Herstellung|Taschenart|Grammatur|Ursprungsland|Bildname/', $key)) {

@@ -1,14 +1,14 @@
 <template>
-    <form @submit.prevent="submit">
+    <form @submit.prevent="submit" :class="{ embed: embed }">
         <div
-            v-for="(item, index) in columns"
-            :key="index"
-            :class="{ error: error[item] }"
+            v-for="(item, key) in inputData"
+            :key="key"
+            :class="{ error: error[key] }"
         >
-            <label :for="item">{{ item }}</label>
-            <input type="text" :id="item" v-model="data[item]" />
-            <p v-if="item in error" class="form-error">
-                {{ error[item] }}
+            <label :for="key">{{ key }}</label>
+            <input type="text" :id="key" v-model="inputData[key]" />
+            <p v-if="key in error" class="form-error">
+                {{ error[key] }}
             </p>
         </div>
         <div class="button-wrapper">
@@ -31,41 +31,49 @@
                 <span>Save</span>
             </button>
         </div>
+        <button v-if="embed" type="button" class="close icon" @click="close">
+            <font-awesome-icon icon="fa-solid fa-square-xmark" />
+        </button>
     </form>
 </template>
 
 <script lang="ts">
-import axios from "axios";
-import { defineComponent, PropType, reactive, ref } from "vue";
-import { HeaderTuple, IArticle, TFormError } from "../types";
+import { defineComponent, PropType, reactive, ref, watch } from "vue";
+import { IArticle, IDataRowIndex, TFormError } from "../types";
+import useAxios from "@/Composables/useAxios";
 
 export default defineComponent({
     name: "AddData",
     props: {
-        columns: {
-            type: Object as PropType<HeaderTuple | []>,
+        embed: Boolean,
+        index: {
+            type: Number,
+            default: -1,
         },
+        data: Object as PropType<IArticle | undefined>,
     },
-    emit: ["add-row"],
+    emit: ["save-row", "close-add-data"],
     setup(props, { emit }) {
-        const data = reactive<IArticle>({
-            Hauptartikelnr: "",
-            Artikelname: "",
-            Hersteller: "",
-            Beschreibung: "",
-            Materialangaben: "",
-            Geschlecht: "",
-            Produktart: "",
-            Ärmel: "",
-            Bein: "",
-            Kragen: "",
-            Herstellung: "",
-            Taschenart: "",
-            Grammatur: "",
-            Material: "",
-            Ursprungsland: "",
-            Bildname: "",
-        });
+        const inputData = reactive<IArticle>(
+            props.data ?? {
+                Hauptartikelnr: "",
+                Artikelname: "",
+                Hersteller: "",
+                Beschreibung: "",
+                Materialangaben: "",
+                Geschlecht: "",
+                Produktart: "",
+                Ärmel: "",
+                Bein: "",
+                Kragen: "",
+                Herstellung: "",
+                Taschenart: "",
+                Grammatur: "",
+                Material: "",
+                Ursprungsland: "",
+                Bildname: "",
+            }
+        );
 
         const error = reactive<TFormError>({
             Hauptartikelnr: "",
@@ -80,11 +88,14 @@ export default defineComponent({
 
         const showIcon = ref<"save" | "check" | "error">("save");
 
+        const { responseData, responseError, fireAxios } =
+            useAxios<IDataRowIndex>("post");
+
         function checkIfEmpty(): boolean {
             let hasError = false;
             let elem: keyof TFormError;
             for (elem in error) {
-                if (data[elem] === "") {
+                if (inputData[elem] === "") {
                     error[elem] = "Please fill in this field";
                     hasError = true;
                 } else {
@@ -96,8 +107,8 @@ export default defineComponent({
 
         function clearInputs() {
             let elem: keyof IArticle;
-            for (elem in data) {
-                data[elem] = "";
+            for (elem in inputData) {
+                inputData[elem] = "";
             }
             let err: keyof TFormError;
             for (err in error) {
@@ -116,24 +127,35 @@ export default defineComponent({
                 return;
             }
 
-            try {
-                const response = await axios.post("/api/add", data);
-                if (response.status === 200 && response.data.error) {
-                    checkIfEmpty();
-                    timeoutIcon("error");
-                } else if (response.status === 200 && response.data.ok) {
-                    emit("add-row", { ...data });
-                    clearInputs();
-                    timeoutIcon("check");
-                } else {
-                    timeoutIcon("error");
-                }
-            } catch (error) {
-                timeoutIcon("error");
-            }
+            fireAxios(props.embed ? "/api/write" : "/api/add", {
+                index: props.index,
+                data: inputData,
+            });
         }
 
-        return { data, error, submit, showIcon };
+        watch(responseData, (newValue) => {
+            if (newValue !== null) {
+                emit("save-row", {
+                    index: props.index,
+                    data: { ...inputData },
+                });
+                clearInputs();
+                timeoutIcon("check");
+            }
+        });
+
+        watch(responseError, (hasError) => {
+            if (hasError) {
+                checkIfEmpty();
+                timeoutIcon("error");
+            }
+        });
+
+        function close() {
+            emit("close-add-data");
+        }
+
+        return { inputData, error, submit, showIcon, close };
     },
 });
 </script>
@@ -143,10 +165,17 @@ form {
     display: flex;
     flex-wrap: wrap;
     padding: 10px;
-    border-radius: 10px;
+    border-bottom-left-radius: 10px;
     justify-content: center;
     max-width: 800px;
     margin: 0 auto;
+}
+
+form.embed {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: var(--header-color);
 }
 
 form > div {
@@ -213,5 +242,11 @@ button span {
 
 .icon-error {
     color: var(--color-error);
+}
+
+button.close {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 </style>

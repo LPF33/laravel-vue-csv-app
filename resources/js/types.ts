@@ -60,9 +60,22 @@ export interface IUpdateValueEmit {
     columnData: string;
 }
 
+export interface IDataRowIndex {
+    index: number;
+    data: IArticle;
+}
+
 export type TFilterChart =
     | "Geschlecht"
     | "Hersteller"
     | "Herstellung"
     | "Material"
     | "Ursprungsland";
+
+export interface TEmbedAddDataSFCProps {
+    open: boolean;
+    index: number;
+    data: IArticle | undefined;
+}
+
+export type TVueEmit = (event: string, ...args: unknown[]) => void;

@@ -7,7 +7,7 @@
         :body="data.body"
         @update-value="updateValue"
     />
-    <AddData v-show="show === 'add'" :columns="data.header" @add-row="addRow" />
+    <AddData v-show="show === 'add'" @save-row="addRow" />
     <ChartUnit v-show="show === 'chart'" :table="data.body" />
     <UploadFile v-if="show === 'upload'" @goto-table="goToTableAfterUpload" />
     <ErrorMessage v-if="error" :error-message="error" />
@@ -21,7 +21,7 @@ import {
     IArticle,
     AxiosReponse,
     TToggleMenu,
-    IUpdateValueEmit,
+    IDataRowIndex,
 } from "./types";
 import HeadLine from "./Components/HeadLine.vue";
 import NavMenu from "./Components/NavMenu.vue";
@@ -59,12 +59,12 @@ const toggle = (str: TToggleMenu): void => {
     show.value = str;
 };
 
-const addRow = (row: IArticle) => {
-    data.body.push(row);
+const addRow = (row: IDataRowIndex) => {
+    data.body.push(row.data);
 };
 
-const updateValue = (event: IUpdateValueEmit) => {
-    data.body[event.rowIndex][event.columnName] = event.columnData;
+const updateValue = (event: IDataRowIndex) => {
+    data.body[event.index] = event.data;
 };
 
 const goToTableAfterUpload = () => {
