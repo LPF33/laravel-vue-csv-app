@@ -17,17 +17,17 @@
             />
             <span>Add Data</span></button
         ><button
-            @click="toggleClicked('upload')"
-            :class="{ active: activeElem === 'upload' }"
-        >
-            <font-awesome-icon icon="fa-solid fa-upload" class="icon" />
-            <span>Upload</span></button
-        ><button
             @click="toggleClicked('chart')"
             :class="{ active: activeElem === 'chart' }"
         >
             <font-awesome-icon icon="fa-solid fa-chart-column" class="icon" />
-            <span>Chart</span>
+            <span>Chart</span></button
+        ><button
+            @click="toggleClicked('upload')"
+            :class="{ active: activeElem === 'upload' }"
+        >
+            <font-awesome-icon icon="fa-solid fa-upload" class="icon" />
+            <span>Upload</span>
         </button>
         <a href="/api/export">
             <font-awesome-icon icon="fa-solid fa-download" class="icon" />
