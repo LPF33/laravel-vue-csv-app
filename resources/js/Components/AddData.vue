@@ -55,24 +55,26 @@ export default defineComponent({
     emit: ["save-row", "close-add-data"],
     setup(props, { emit }) {
         const inputData = reactive<IArticle>(
-            props.data ?? {
-                Hauptartikelnr: "",
-                Artikelname: "",
-                Hersteller: "",
-                Beschreibung: "",
-                Materialangaben: "",
-                Geschlecht: "",
-                Produktart: "",
-                Ärmel: "",
-                Bein: "",
-                Kragen: "",
-                Herstellung: "",
-                Taschenart: "",
-                Grammatur: "",
-                Material: "",
-                Ursprungsland: "",
-                Bildname: "",
-            }
+            props.data
+                ? { ...props.data }
+                : {
+                      Hauptartikelnr: "",
+                      Artikelname: "",
+                      Hersteller: "",
+                      Beschreibung: "",
+                      Materialangaben: "",
+                      Geschlecht: "",
+                      Produktart: "",
+                      Ärmel: "",
+                      Bein: "",
+                      Kragen: "",
+                      Herstellung: "",
+                      Taschenart: "",
+                      Grammatur: "",
+                      Material: "",
+                      Ursprungsland: "",
+                      Bildname: "",
+                  }
         );
 
         const error = reactive<TFormError>({
