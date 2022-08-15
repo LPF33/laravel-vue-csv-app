@@ -22,8 +22,8 @@ class Controller extends BaseController
     /**
      * Only read the CSV file
      *
-     * Test, if file can be opened. If not, send a 500 Internal Server Error.
-     * Create associative array, to store seperated CSV table header and body.
+     * Test, if file exists. If not, send a error message with JSON.
+     * If exists, open file. Create associative array, to store seperated CSV table header and body.
      * Iterate over file, read every line. Store first line in $tableArray["header"].
      * Other lines store as Array in body, with the depending key from header.
      * Send response as json.
