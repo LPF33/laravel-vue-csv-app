@@ -13,11 +13,11 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    const FOLDER_PATH = __DIR__.'/../../Assets';
+    const FOLDER_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets';
 
-    const FILE_PATH = __DIR__.'/../../Assets/Artikel.csv';
+    const FILE_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets'.DIRECTORY_SEPARATOR.'Artikel.csv';
 
-    const NEW_FILE_PATH = __DIR__.'/../../Assets/NewArtikel.csv';
+    const NEW_FILE_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets'.DIRECTORY_SEPARATOR.'NewArtikel.csv';
 
     /**
      * Only read the CSV file
@@ -30,11 +30,11 @@ class Controller extends BaseController
      */
     public function readCSV()
     {
-        $fileResource = fopen(self::FILE_PATH, 'r');
-
-        if ($fileResource === false) {
-            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
+        if (! file_exists(self::FILE_PATH)) {
+            return response(['error' => 'Upload CSV file'], 200, ['Content-type' => 'application/json']);
         }
+
+        $fileResource = fopen(self::FILE_PATH, 'r');
 
         $tableArray = [
             'header' => [],
@@ -157,7 +157,7 @@ class Controller extends BaseController
     public function exportCSV()
     {
         if (! file_exists(self::FILE_PATH)) {
-            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
+            return redirect('/');
         }
 
         return response()->download(self::FILE_PATH, 'Artikel.csv', ['Content-type' => 'text/csv']);
@@ -182,7 +182,7 @@ class Controller extends BaseController
                 return response()->json(['error' => 'Incorrect file type']);
             }
 
-            if (! unlink(self::FILE_PATH)) {
+            if (file_exists(self::FILE_PATH) && ! unlink(self::FILE_PATH)) {
                 return response('Server error', 500);
             }
 

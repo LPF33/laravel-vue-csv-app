@@ -2,13 +2,13 @@
     <HeadLine />
     <NavMenu @toggle="toggle" :activeElem="show" />
     <TableUnit
-        v-show="show === 'table'"
+        v-show="show === 'table' && !error"
         :header="data.header"
         :body="data.body"
         @update-value="updateValue"
     />
-    <AddData v-show="show === 'add'" @save-row="addRow" />
-    <ChartUnit v-show="show === 'chart'" :table="data.body" />
+    <AddData v-show="show === 'add' && !error" @save-row="addRow" />
+    <ChartUnit v-show="show === 'chart' && !error" :table="data.body" />
     <UploadFile v-if="show === 'upload'" @goto-table="goToTableAfterUpload" />
     <ErrorMessage v-if="error" :error-message="error" />
 </template>
@@ -43,10 +43,13 @@ const error = ref("");
 const getCSVData = async () => {
     try {
         const response = await axios.get<AxiosReponse>("/api/read");
-        if (response.status === 200 && response.data) {
+        if (response.status === 200 && !response.data.error) {
             data.header = response.data.header;
             data.body = response.data.body;
             error.value = "";
+        } else if (response.status === 200 && response.data.error) {
+            error.value = response.data.error;
+            show.value = "upload";
         }
     } catch (err) {
         error.value = "Server Error! Please try again!";

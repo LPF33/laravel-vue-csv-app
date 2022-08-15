@@ -50,6 +50,7 @@ export type TFormError = Omit<
 export interface AxiosReponse {
     header: HeaderTuple;
     body: IArticle[];
+    error?: string;
 }
 
 export type TToggleMenu = "table" | "chart" | "add" | "upload";
