@@ -9,15 +9,42 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
+class Delimiter
+{
+    public static $delimiter = ',';
+
+    public static $delimiters = [
+        ',' => 0,
+        ';' => 0,
+        "\t" => 0,
+        '|' => 0,
+    ];
+
+    public static function getDelimiter(string $filePath): string
+    {
+        $fileResource = fopen($filePath, 'r');
+        $firstLine = fgets($fileResource);
+        fclose($fileResource);
+
+        foreach (self::$delimiters as $delimiter => &$counter) {
+            $counter = count(str_getcsv($firstLine, $delimiter));
+        }
+
+        return array_search(max(self::$delimiters), self::$delimiters);
+    }
+}
+
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     const FOLDER_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets';
 
-    const FILE_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets'.DIRECTORY_SEPARATOR.'Artikel.csv';
+    const FILE_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets'.DIRECTORY_SEPARATOR.'Upload.csv';
 
-    const NEW_FILE_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets'.DIRECTORY_SEPARATOR.'NewArtikel.csv';
+    const NEW_FILE_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets'.DIRECTORY_SEPARATOR.'NewUpload.csv';
+
+    const FILE_NAME = 'Upload.csv';
 
     /**
      * Only read the CSV file
@@ -28,7 +55,7 @@ class Controller extends BaseController
      * Other lines store as Array in body, with the depending key from header.
      * Send response as json.
      */
-    public function readCSV()
+    public function readCSV(Request $request)
     {
         if (! file_exists(self::FILE_PATH)) {
             return response(['error' => 'Upload CSV file'], 200, ['Content-type' => 'application/json']);
@@ -42,7 +69,11 @@ class Controller extends BaseController
         ];
         $rowCounter = 0;
 
-        while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, ';')) !== false) {
+        $delimiter = $request->session()->get('delimiter', function () {
+            return Delimiter::getDelimiter(self::FILE_PATH);
+        });
+
+        while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, $delimiter)) !== false) {
             if ($rowCounter === 0) {
                 $tableHeader = [];
                 foreach ($rowCSV as $key) {
@@ -95,12 +126,16 @@ class Controller extends BaseController
             return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
+        $delimiter = $request->session()->get('delimiter', function () {
+            return Delimiter::getDelimiter(self::FILE_PATH);
+        });
+
         $rowCounter = 0;
-        while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, ';')) !== false) {
+        while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, $delimiter)) !== false) {
             if ($rowCounter === $rowIndex + 1) {
-                fputcsv($newFileResource, [...$newRow->values()], ';');
+                fputcsv($newFileResource, [...$newRow->values()], $delimiter);
             } else {
-                fputcsv($newFileResource, $rowCSV, ';');
+                fputcsv($newFileResource, $rowCSV, $delimiter);
             }
             $rowCounter++;
         }
@@ -142,7 +177,11 @@ class Controller extends BaseController
             return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
-        fputcsv($fileResource, [...$newRow->values()], ';');
+        $delimiter = $request->session()->get('delimiter', function () {
+            return Delimiter::getDelimiter(self::FILE_PATH);
+        });
+
+        fputcsv($fileResource, [...$newRow->values()], $delimiter);
 
         fclose($fileResource);
 
@@ -160,7 +199,7 @@ class Controller extends BaseController
             return redirect('/');
         }
 
-        return response()->download(self::FILE_PATH, 'Artikel.csv', ['Content-type' => 'text/csv']);
+        return response()->download(self::FILE_PATH, self::FILE_NAME, ['Content-type' => 'text/csv']);
     }
 
     /**
@@ -186,7 +225,9 @@ class Controller extends BaseController
                 return response('Server error', 500);
             }
 
-            $file->move(self::FOLDER_PATH, 'Artikel.csv');
+            $file->move(self::FOLDER_PATH, self::FILE_NAME);
+
+            $request->session()->put('delimiter', Delimiter::getDelimiter(self::FILE_PATH));
 
             return response()->json(['ok' => 'correct input']);
         } catch (FileException $err) {
