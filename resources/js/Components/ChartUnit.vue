@@ -24,7 +24,7 @@
 import { defineComponent, PropType, reactive, ref, toRefs, watch } from "vue";
 import { Pie } from "vue-chartjs";
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from "chart.js";
-import { IRowData, TFilterChart } from "../types";
+import { IRowData, THeader } from "../types";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -32,19 +32,17 @@ export default defineComponent({
     name: "ChartUni",
     components: { Pie },
     props: {
+        filterArr: {
+            type: Array as PropType<THeader>,
+            required: true,
+        },
         table: {
             type: Array as PropType<IRowData[]>,
             required: true,
         },
     },
     setup(props) {
-        const filterValues = reactive<TFilterChart[]>([
-            "Geschlecht",
-            "Hersteller",
-            "Herstellung",
-            "Material",
-            "Ursprungsland",
-        ]);
+        const filterValues = reactive<THeader>([...props.filterArr]);
 
         const activeFilter = ref("");
 
@@ -91,7 +89,7 @@ export default defineComponent({
             chartId: "pie-chart",
         });
 
-        function filter(str: TFilterChart) {
+        function filter(str: string) {
             activeFilter.value = str;
             const filteredArray = props.table.map((val) => {
                 if (!val[str]) {
@@ -118,7 +116,7 @@ export default defineComponent({
 
         watch(
             () => props.table,
-            () => filter("Herstellung"),
+            () => filter(props.filterArr[1] ? props.filterArr[1] : ""),
             { immediate: true }
         );
 

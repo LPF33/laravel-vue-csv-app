@@ -12,7 +12,11 @@
         @save-row="addRow"
         :data="data.emptyObj"
     />
-    <ChartUnit v-show="show === 'chart' && !error" :table="data.body" />
+    <ChartUnit
+        v-if="show === 'chart' && !error"
+        :filter-arr="data.header"
+        :table="data.body"
+    />
     <UploadFile v-if="show === 'upload'" @goto-table="goToTableAfterUpload" />
     <ErrorMessage v-if="error" :error-message="error" />
 </template>

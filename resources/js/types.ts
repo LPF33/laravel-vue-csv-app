@@ -21,13 +21,6 @@ export interface IDataRowIndex {
     data: IRowData;
 }
 
-export type TFilterChart =
-    | "Geschlecht"
-    | "Hersteller"
-    | "Herstellung"
-    | "Material"
-    | "Ursprungsland";
-
 export interface TEmbedAddDataSFCProps {
     open: boolean;
     index: number;
