@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { IArticle, IUpdateValueEmit } from "@/types";
+import { IRowData, IUpdateValueEmit } from "@/types";
 import { defineComponent, ref, PropType, watch } from "vue";
 
 export default defineComponent({
@@ -22,7 +22,7 @@ export default defineComponent({
             required: true,
         },
         columnName: {
-            type: String as PropType<keyof IArticle>,
+            type: String as PropType<keyof IRowData>,
             required: true,
         },
         rowIndex: {
@@ -97,6 +97,7 @@ input {
     display: inline-block;
     background-color: transparent;
     height: 1.8rem;
+    text-align: center;
 }
 
 .icon {

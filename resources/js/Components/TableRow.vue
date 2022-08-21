@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, watch } from "vue";
-import { IArticle, IUpdateValueEmit, IDataRowIndex } from "../types";
+import { IRowData, IUpdateValueEmit, IDataRowIndex } from "../types";
 import TableData from "./TableData.vue";
 import useAxios from "@/Composables/useAxios";
 
@@ -24,7 +24,7 @@ export default defineComponent({
     components: { TableData },
     props: {
         row: {
-            type: Object as PropType<IArticle>,
+            type: Object as PropType<IRowData>,
             required: true,
         },
         index: {

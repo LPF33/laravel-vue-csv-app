@@ -24,7 +24,7 @@
 import { defineComponent, PropType, reactive, ref, toRefs, watch } from "vue";
 import { Pie } from "vue-chartjs";
 import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from "chart.js";
-import { IArticle, TFilterChart } from "../types";
+import { IRowData, TFilterChart } from "../types";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
@@ -33,7 +33,7 @@ export default defineComponent({
     components: { Pie },
     props: {
         table: {
-            type: Array as PropType<IArticle[]>,
+            type: Array as PropType<IRowData[]>,
             required: true,
         },
     },

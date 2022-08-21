@@ -7,7 +7,11 @@
         :body="data.body"
         @update-value="updateValue"
     />
-    <AddData v-show="show === 'add' && !error" @save-row="addRow" />
+    <AddData
+        v-if="show === 'add' && !error"
+        @save-row="addRow"
+        :data="data.emptyObj"
+    />
     <ChartUnit v-show="show === 'chart' && !error" :table="data.body" />
     <UploadFile v-if="show === 'upload'" @goto-table="goToTableAfterUpload" />
     <ErrorMessage v-if="error" :error-message="error" />
@@ -17,8 +21,8 @@
 import { reactive, ref } from "vue";
 import axios from "axios";
 import {
-    HeaderTuple,
-    IArticle,
+    THeader,
+    IRowData,
     AxiosReponse,
     TToggleMenu,
     IDataRowIndex,
@@ -32,8 +36,9 @@ import AddData from "./Components/AddData.vue";
 import ErrorMessage from "./Components/ErrorMessage.vue";
 
 const data = reactive({
-    header: [] as HeaderTuple | [],
-    body: [] as IArticle[],
+    header: [] as THeader | [],
+    body: [] as IRowData[],
+    emptyObj: {} as IRowData,
 });
 
 const show = ref<TToggleMenu>("table");
@@ -46,6 +51,9 @@ const getCSVData = async () => {
         if (response.status === 200 && !response.data.error) {
             data.header = response.data.header;
             data.body = response.data.body;
+            data.emptyObj = Object.fromEntries(
+                Object.keys(response.data.body[0]).map((key) => [key, ""])
+            );
             error.value = "";
         } else if (response.status === 200 && response.data.error) {
             error.value = response.data.error;

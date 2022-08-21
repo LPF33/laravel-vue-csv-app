@@ -1,15 +1,8 @@
 <template>
     <form @submit.prevent="submit" :class="{ embed: embed }">
-        <div
-            v-for="(item, key) in inputData"
-            :key="key"
-            :class="{ error: error[key] }"
-        >
-            <label :for="key">{{ key }}</label>
-            <input type="text" :id="key" v-model="inputData[key]" />
-            <p v-if="key in error" class="form-error">
-                {{ error[key] }}
-            </p>
+        <div v-for="(item, key) in inputData" :key="key">
+            <label :for="key + 'key'">{{ key }}</label>
+            <input type="text" :id="key + 'key'" v-model="inputData[key]" />
         </div>
         <div class="button-wrapper">
             <button type="submit">
@@ -39,7 +32,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, reactive, ref, watch } from "vue";
-import { IArticle, IDataRowIndex, TFormError } from "../types";
+import { IRowData, IDataRowIndex } from "../types";
 import useAxios from "@/Composables/useAxios";
 
 export default defineComponent({
@@ -50,71 +43,20 @@ export default defineComponent({
             type: Number,
             default: -1,
         },
-        data: Object as PropType<IArticle | undefined>,
+        data: Object as PropType<IRowData>,
     },
     emit: ["save-row", "close-add-data"],
     setup(props, { emit }) {
-        const inputData = reactive<IArticle>(
-            props.data
-                ? { ...props.data }
-                : {
-                      Hauptartikelnr: "",
-                      Artikelname: "",
-                      Hersteller: "",
-                      Beschreibung: "",
-                      Materialangaben: "",
-                      Geschlecht: "",
-                      Produktart: "",
-                      Ärmel: "",
-                      Bein: "",
-                      Kragen: "",
-                      Herstellung: "",
-                      Taschenart: "",
-                      Grammatur: "",
-                      Material: "",
-                      Ursprungsland: "",
-                      Bildname: "",
-                  }
-        );
-
-        const error = reactive<TFormError>({
-            Hauptartikelnr: "",
-            Artikelname: "",
-            Hersteller: "",
-            Beschreibung: "",
-            Materialangaben: "",
-            Geschlecht: "",
-            Produktart: "",
-            Material: "",
-        });
+        const inputData = reactive<IRowData>({ ...props.data });
 
         const showIcon = ref<"save" | "check" | "error">("save");
 
         const { responseData, responseError, fireAxios } =
             useAxios<IDataRowIndex>("post");
 
-        function checkIfEmpty(): boolean {
-            let hasError = false;
-            let elem: keyof TFormError;
-            for (elem in error) {
-                if (inputData[elem] === "") {
-                    error[elem] = "Please fill in this field";
-                    hasError = true;
-                } else {
-                    error[elem] = "";
-                }
-            }
-            return hasError;
-        }
-
         function clearInputs() {
-            let elem: keyof IArticle;
-            for (elem in inputData) {
+            for (const elem in inputData) {
                 inputData[elem] = "";
-            }
-            let err: keyof TFormError;
-            for (err in error) {
-                error[err] = "";
             }
         }
 
@@ -124,11 +66,6 @@ export default defineComponent({
         }
 
         async function submit() {
-            if (checkIfEmpty()) {
-                timeoutIcon("error");
-                return;
-            }
-
             fireAxios(props.embed ? "/api/write" : "/api/add", {
                 index: props.index,
                 data: inputData,
@@ -148,7 +85,6 @@ export default defineComponent({
 
         watch(responseError, (hasError) => {
             if (hasError) {
-                checkIfEmpty();
                 timeoutIcon("error");
             }
         });
@@ -157,7 +93,7 @@ export default defineComponent({
             emit("close-add-data");
         }
 
-        return { inputData, error, submit, showIcon, close };
+        return { inputData, submit, showIcon, close };
     },
 });
 </script>

@@ -49,7 +49,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType, reactive, ref } from "vue";
-import { IArticle, IDataRowIndex, TEmbedAddDataSFCProps } from "../types";
+import { IRowData, IDataRowIndex, TEmbedAddDataSFCProps } from "../types";
 import TableRow from "./TableRow.vue";
 import AddData from "./AddData.vue";
 
@@ -62,7 +62,7 @@ export default defineComponent({
             required: true,
         },
         body: {
-            type: Array as PropType<IArticle[]>,
+            type: Array as PropType<IRowData[]>,
             required: true,
         },
     },
