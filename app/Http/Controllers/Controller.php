@@ -7,6 +7,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class Delimiter
@@ -38,13 +39,9 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    const FOLDER_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets';
+    const FOLDER_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Uploads'.DIRECTORY_SEPARATOR;
 
-    const FILE_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets'.DIRECTORY_SEPARATOR.'Upload.csv';
-
-    const NEW_FILE_PATH = __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Assets'.DIRECTORY_SEPARATOR.'NewUpload.csv';
-
-    const FILE_NAME = 'Upload.csv';
+    const DEFAULT_NAME = 'Upload.csv';
 
     /**
      * Only read the CSV file
@@ -57,11 +54,17 @@ class Controller extends BaseController
      */
     public function readCSV(Request $request)
     {
-        if (! file_exists(self::FILE_PATH)) {
+        if (! $request->session()->has('file')) {
             return response(['error' => 'Upload CSV file'], 200, ['Content-type' => 'application/json']);
         }
 
-        $fileResource = fopen(self::FILE_PATH, 'r');
+        $filePath = self::FOLDER_PATH.$request->session()->get('file');
+
+        if (! file_exists($filePath)) {
+            return response(['error' => 'Upload CSV file'], 200, ['Content-type' => 'application/json']);
+        }
+
+        $fileResource = fopen($filePath, 'r');
 
         $tableArray = [
             'header' => [],
@@ -69,8 +72,8 @@ class Controller extends BaseController
         ];
         $rowCounter = 0;
 
-        $delimiter = $request->session()->get('delimiter', function () {
-            return Delimiter::getDelimiter(self::FILE_PATH);
+        $delimiter = $request->session()->get('delimiter', function () use ($filePath) {
+            return Delimiter::getDelimiter($filePath);
         });
 
         while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, $delimiter)) !== false) {
@@ -113,15 +116,25 @@ class Controller extends BaseController
             return response()->json(['error' => 'Incorrect input']);
         }
 
-        $fileResource = fopen(self::FILE_PATH, 'r');
-        $newFileResource = fopen(self::NEW_FILE_PATH, 'w');
+        if (! $request->session()->has('file')) {
+            return response()->json(['error' => 'Upload CSV file']);
+        }
+
+        $oldFilePath = self::FOLDER_PATH.$request->session()->get('file');
+        $newFileName = Uuid::uuid4()->toString().'.csv';
+        $newFilePath = self::FOLDER_PATH.$newFileName;
+
+        error_log($oldFilePath);
+
+        $fileResource = fopen($oldFilePath, 'r');
+        $newFileResource = fopen($newFilePath, 'w');
 
         if ($fileResource === false || $newFileResource === false) {
             return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
-        $delimiter = $request->session()->get('delimiter', function () {
-            return Delimiter::getDelimiter(self::FILE_PATH);
+        $delimiter = $request->session()->get('delimiter', function () use ($oldFilePath) {
+            return Delimiter::getDelimiter($oldFilePath);
         });
 
         $rowCounter = 0;
@@ -136,7 +149,9 @@ class Controller extends BaseController
         fclose($newFileResource);
         fclose($fileResource);
 
-        if (! unlink(self::FILE_PATH) || ! rename(self::NEW_FILE_PATH, self::FILE_PATH)) {
+        $request->session()->put('file', $newFileName);
+
+        if (! unlink($oldFilePath)) {
             return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
@@ -151,18 +166,24 @@ class Controller extends BaseController
      */
     public function appendCSV(Request $request)
     {
+        if (! $request->session()->has('file')) {
+            return response(['error' => 'Upload CSV file'], 200, ['Content-type' => 'application/json']);
+        }
+
+        $filePath = self::FOLDER_PATH.$request->session()->get('file');
+
         $collection = $request->collect();
 
         $newRow = collect($collection['data'])->map(fn ($value) => trim(strip_tags($value)));
 
-        $fileResource = fopen(self::FILE_PATH, 'a');
+        $fileResource = fopen($filePath, 'a');
 
         if ($fileResource === false) {
             return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
         }
 
-        $delimiter = $request->session()->get('delimiter', function () {
-            return Delimiter::getDelimiter(self::FILE_PATH);
+        $delimiter = $request->session()->get('delimiter', function () use ($filePath) {
+            return Delimiter::getDelimiter($filePath);
         });
 
         fputcsv($fileResource, [...$newRow->values()], $delimiter);
@@ -177,13 +198,19 @@ class Controller extends BaseController
      *
      * If file exists, use download function in response.
      */
-    public function exportCSV()
+    public function exportCSV(Request $request)
     {
-        if (! file_exists(self::FILE_PATH)) {
+        if (! $request->session()->has('file')) {
             return redirect('/');
         }
 
-        return response()->download(self::FILE_PATH, self::FILE_NAME, ['Content-type' => 'text/csv']);
+        $filePath = self::FOLDER_PATH.$request->session()->get('file');
+
+        if (! file_exists($filePath)) {
+            return redirect('/');
+        }
+
+        return response()->download($filePath, $request->session()->get('originalName', self::DEFAULT_NAME), ['Content-type' => 'text/csv']);
     }
 
     /**
@@ -201,17 +228,25 @@ class Controller extends BaseController
 
             $file = $request->file('file');
 
-            if ($file->getClientMimeType() !== 'text/csv') {
+            if ($file->getClientMimeType() !== 'text/csv' || ! preg_match('/txt|csv/', $file->guessExtension())) {
                 return response()->json(['error' => 'Incorrect file type']);
             }
 
-            if (file_exists(self::FILE_PATH) && ! unlink(self::FILE_PATH)) {
-                return response('Server error', 500);
+            if ($request->session()->has('file')) {
+                $filePath = self::FOLDER_PATH.$request->session()->get('file');
+                if (file_exists($filePath) && ! unlink($filePath)) {
+                    return response('Server error', 500);
+                }
+                error_log('deleted: '.$filePath.PHP_EOL);
             }
 
-            $file->move(self::FOLDER_PATH, self::FILE_NAME);
+            $fileName = Uuid::uuid4()->toString().'.csv';
 
-            $request->session()->put('delimiter', Delimiter::getDelimiter(self::FILE_PATH));
+            $file->move(self::FOLDER_PATH, $fileName);
+
+            $request->session()->put('file', $fileName);
+            $request->session()->put('originalName', $file->getClientOriginalName());
+            $request->session()->put('delimiter', Delimiter::getDelimiter(self::FOLDER_PATH.$fileName));
 
             return response()->json(['ok' => 'correct input']);
         } catch (FileException $err) {
