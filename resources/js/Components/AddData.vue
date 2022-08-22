@@ -1,23 +1,27 @@
 <template>
     <form @submit.prevent="submit" :class="{ embed: embed }">
-        <div v-for="(item, key) in inputData" :key="key">
-            <label :for="key + 'key'">{{ key }}</label>
-            <input type="text" :id="key + 'key'" v-model="inputData[key]" />
+        <div v-for="(item, key) in inputData" :key="String(index) + key">
+            <label :for="String(index) + key">{{ key }}</label>
+            <input
+                type="text"
+                :id="String(index) + key"
+                v-model="inputData[key]"
+            />
         </div>
         <div class="button-wrapper">
             <button type="submit">
                 <font-awesome-icon
-                    v-if="showIcon === 'save'"
+                    v-if="icon === 'save'"
                     icon="fa-solid fa-floppy-disk"
                     class="icon"
                 />
                 <font-awesome-icon
-                    v-if="showIcon === 'check'"
+                    v-if="icon === 'check'"
                     icon="fa-solid fa-circle-check"
                     class="icon icon-check"
                 />
                 <font-awesome-icon
-                    v-if="showIcon === 'error'"
+                    v-if="icon === 'error'"
                     icon="fa-solid fa-triangle-exclamation"
                     class="icon icon-error"
                 />
@@ -31,8 +35,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, reactive, ref, watch } from "vue";
-import { IRowData, IDataRowIndex } from "../types";
+import { defineComponent, PropType, reactive, toRefs, watch } from "vue";
+import { IRowData, IDataRowIndex, IAddDataState } from "../types";
 import useAxios from "@/Composables/useAxios";
 
 export default defineComponent({
@@ -43,40 +47,53 @@ export default defineComponent({
             type: Number,
             default: -1,
         },
-        data: Object as PropType<IRowData>,
+        data: {
+            type: Object as PropType<IRowData>,
+            required: true,
+        },
     },
     emit: ["save-row", "close-add-data"],
     setup(props, { emit }) {
-        const inputData = reactive<IRowData>({ ...props.data });
-
-        const showIcon = ref<"save" | "check" | "error">("save");
+        const state = reactive<IAddDataState>({
+            inputData: { ...props.data },
+            icon: "save",
+        });
 
         const { responseData, responseError, fireAxios } =
             useAxios<IDataRowIndex>("post");
 
         function clearInputs() {
-            for (const elem in inputData) {
-                inputData[elem] = "";
+            for (const elem in state.inputData) {
+                state.inputData[elem] = "";
             }
         }
 
         function timeoutIcon(str: "check" | "error") {
-            showIcon.value = str;
-            setTimeout(() => (showIcon.value = "save"), 3000);
+            state.icon = str;
+            setTimeout(() => (state.icon = "save"), 3000);
         }
 
         async function submit() {
             fireAxios(props.embed ? "/api/write" : "/api/add", {
                 index: props.index,
-                data: inputData,
+                data: state.inputData,
             });
         }
+
+        function close() {
+            emit("close-add-data");
+        }
+
+        watch(
+            () => props.data,
+            (newValue) => (state.inputData = { ...newValue })
+        );
 
         watch(responseData, (newValue) => {
             if (newValue !== null) {
                 emit("save-row", {
                     index: props.index,
-                    data: { ...inputData },
+                    data: { ...state.inputData },
                 });
                 clearInputs();
                 timeoutIcon("check");
@@ -89,11 +106,7 @@ export default defineComponent({
             }
         });
 
-        function close() {
-            emit("close-add-data");
-        }
-
-        return { inputData, submit, showIcon, close };
+        return { ...toRefs(state), submit, close };
     },
 });
 </script>

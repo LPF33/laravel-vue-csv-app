@@ -28,3 +28,8 @@ export interface TEmbedAddDataSFCProps {
 }
 
 export type TVueEmit = (event: string, ...args: unknown[]) => void;
+
+export interface IAddDataState {
+    inputData: IRowData;
+    icon: "save" | "check" | "error";
+}
