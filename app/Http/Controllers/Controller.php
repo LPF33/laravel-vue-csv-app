@@ -46,7 +46,7 @@ class Controller extends BaseController
     /**
      * Only read the CSV file
      *
-     * Test, if file exists. If not, send a error message with JSON.
+     * Test, if file is in session and file exists. If not, send a error message with JSON.
      * If exists, open file. Create associative array, to store seperated CSV table header and body.
      * Iterate over file, read every line. Store first line in $tableArray["header"].
      * Other lines store as Array in body, with the depending key from header.
@@ -55,13 +55,13 @@ class Controller extends BaseController
     public function readCSV(Request $request)
     {
         if (! $request->session()->has('file')) {
-            return response(['error' => 'Upload CSV file'], 200, ['Content-type' => 'application/json']);
+            return response()->json(['error' => 'Upload CSV file']);
         }
 
         $filePath = self::FOLDER_PATH.$request->session()->get('file');
 
         if (! file_exists($filePath)) {
-            return response(['error' => 'Upload CSV file'], 200, ['Content-type' => 'application/json']);
+            return response()->json(['error' => 'Upload CSV file']);
         }
 
         $fileResource = fopen($filePath, 'r');
@@ -98,11 +98,11 @@ class Controller extends BaseController
     }
 
     /**
-     * Read old file, write new file with new data. Delete old file. Rename new file.
+     * Read old file, write new file with new data. Delete old file.
      *
      * Read the Request. Validate index and data send with request.
      * Open old (flag r) and new file (flag w). Read old file, write line to new file, when index reached, write data to new file.
-     * When old file is deleted and new file renamed, send response for success.
+     * Store new fileName in session, delete old file and send response for success.
      */
     public function writeCSV(Request $request)
     {
@@ -123,8 +123,6 @@ class Controller extends BaseController
         $oldFilePath = self::FOLDER_PATH.$request->session()->get('file');
         $newFileName = Uuid::uuid4()->toString().'.csv';
         $newFilePath = self::FOLDER_PATH.$newFileName;
-
-        error_log($oldFilePath);
 
         $fileResource = fopen($oldFilePath, 'r');
         $newFileResource = fopen($newFilePath, 'w');
@@ -167,7 +165,7 @@ class Controller extends BaseController
     public function appendCSV(Request $request)
     {
         if (! $request->session()->has('file')) {
-            return response(['error' => 'Upload CSV file'], 200, ['Content-type' => 'application/json']);
+            return response()->json(['error' => 'Upload CSV file']);
         }
 
         $filePath = self::FOLDER_PATH.$request->session()->get('file');
@@ -196,7 +194,7 @@ class Controller extends BaseController
     /**
      * Export CSV file and trigger download in browser.
      *
-     * If file exists, use download function in response.
+     * If fileName in session and corresponding file exists, use download function in response.
      */
     public function exportCSV(Request $request)
     {
@@ -217,7 +215,8 @@ class Controller extends BaseController
      * Import CSV file
      *
      * Check if file is present in request and has been uploaded with HTTP and no error occurred.
-     * Check for MIME type (not safe value). Delete old Artikel.csv and move uploaded file to Assets-folder.
+     * Check for MIME type and extension. If 'file' in session delete old file. Create new fileName with uuid4.
+     * Move new uploaded file to Uploads folder. Store in session: new fileName, originalName, delimiter of CSV
      */
     public function importCSV(Request $request)
     {
@@ -237,7 +236,6 @@ class Controller extends BaseController
                 if (file_exists($filePath) && ! unlink($filePath)) {
                     return response('Server error', 500);
                 }
-                error_log('deleted: '.$filePath.PHP_EOL);
             }
 
             $fileName = Uuid::uuid4()->toString().'.csv';
