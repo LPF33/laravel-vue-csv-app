@@ -157,7 +157,7 @@ thead {
 thead tr {
     background-color: var(--table-header);
     color: var(--color-white);
-    text-align: left;
+    text-align: center;
 }
 
 th,
