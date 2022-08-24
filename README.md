@@ -1,8 +1,9 @@
 # About project:
 
-Tabular representation of the data from the CSV file. Edit and add data from CSV file. Visualize data with a Pie-Chart. Download the CSV file.
-
-See also: [Aufgabe](https://github.com/LPF33/laravel-vue-csv-app/blob/master/Aufgabenergebnis.md)
+ - Tabular representation of data from CSV file 
+ - Edit and add data 
+ - Visualize data with a Pie-Chart
+ - Upload & Download CSV file.
 
 ## Tech Stack
 
@@ -12,6 +13,12 @@ See also: [Aufgabe](https://github.com/LPF33/laravel-vue-csv-app/blob/master/Auf
 - 3rd Party Libraries: [Chart.js](https://vue-chartjs.org/), [Fontawesome](https://fontawesome.com/icons)
 
 ## Run project local
+
+The following components must be installed locally:
+
+- [nodejs](https://nodejs.org/en/) v16
+- [PHP](https://dotnet.microsoft.com/download) v8
+- [Composer](https://getcomposer.org/) v2.3.10
 
 ```console
 $ git clone git@github.com:LPF33/laravel-vue-csv-app.git
@@ -68,10 +75,11 @@ https://vitejs.dev/config/
 ## Laravel Routes
 
   - API: In folder **routes/api.php**
-    - "/api/read" (get-Route)
-    - "/api/write" (post-Route)
-    - "/api/add" (post-Route)
-    - "/api/export" (get-Route)
+    - "/api/read" (GET)
+    - "/api/write" (POST)
+    - "/api/add" (POST)
+    - "/api/upload" (POST)
+    - "/api/export" (GET)
   
   - Web: In folder **routes/web.php**
-    - "/" (get-Route)
+    - "/"
