@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Utilities\Delimiter;
+use App\Utilities\LogErrors;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
 
 class Controller extends BaseController
@@ -74,7 +74,7 @@ class Controller extends BaseController
 
             return response()->json($tableArray);
         } catch (Exception $err) {
-            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+            LogErrors::log($err);
 
             return response('Server error', 500);
         }
@@ -112,7 +112,7 @@ class Controller extends BaseController
             $newFileResource = fopen($newFilePath, 'w');
 
             if ($fileResource === false || $newFileResource === false) {
-                return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
+                throw new Exception('fileResource or newFileResource could not be opened');
             }
 
             $delimiter = $request->session()->get('delimiter', function () use ($oldFilePath) {
@@ -134,12 +134,12 @@ class Controller extends BaseController
             $request->session()->put('file', $newFileName);
 
             if (! unlink($oldFilePath)) {
-                return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
+                throw new Exception('oldFile could not be deleted!');
             }
 
             return response()->json(['ok' => 'correct input']);
         } catch (Exception $err) {
-            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+            LogErrors::log($err);
 
             return response('Server error', 500);
         }
@@ -167,7 +167,7 @@ class Controller extends BaseController
             $fileResource = fopen($filePath, 'a');
 
             if ($fileResource === false) {
-                return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
+                throw new Exception('fileResource could not be opened!');
             }
 
             $delimiter = $request->session()->get('delimiter', function () use ($filePath) {
@@ -180,7 +180,7 @@ class Controller extends BaseController
 
             return response()->json(['ok' => 'correct input', 'data' => $newRow]);
         } catch (Exception $err) {
-            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+            LogErrors::log($err);
 
             return response('Server error', 500);
         }
@@ -206,7 +206,7 @@ class Controller extends BaseController
 
             return response()->download($filePath, $request->session()->get('originalName', self::DEFAULT_NAME), ['Content-type' => 'text/csv']);
         } catch (Exception $err) {
-            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+            LogErrors::log($err);
 
             return response('Server error', 500);
         }
@@ -235,7 +235,7 @@ class Controller extends BaseController
             if ($request->session()->has('file')) {
                 $filePath = self::FOLDER_PATH.$request->session()->get('file');
                 if (file_exists($filePath) && ! unlink($filePath)) {
-                    return response('Server error', 500);
+                    throw new Exception('oldFile from session could not be deleted!');
                 }
             }
 
@@ -249,7 +249,7 @@ class Controller extends BaseController
 
             return response()->json(['ok' => 'correct input']);
         } catch (Exception $err) {
-            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+            LogErrors::log($err);
 
             return response('Server error', 500);
         }
