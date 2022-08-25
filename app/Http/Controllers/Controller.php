@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Utilities\Delimiter;
-use App\Utilities\LogErrors;
-use Exception;
+use App\Utilities\MyLogger;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class Controller extends BaseController
 {
@@ -73,8 +73,8 @@ class Controller extends BaseController
             fclose($fileResource);
 
             return response()->json($tableArray);
-        } catch (Exception $err) {
-            LogErrors::log($err);
+        } catch (Throwable $err) {
+            MyLogger::error($err);
 
             return response('Server error', 500);
         }
@@ -138,8 +138,8 @@ class Controller extends BaseController
             }
 
             return response()->json(['ok' => 'correct input']);
-        } catch (Exception $err) {
-            LogErrors::log($err);
+        } catch (Throwable $err) {
+            MyLogger::error($err);
 
             return response('Server error', 500);
         }
@@ -179,8 +179,8 @@ class Controller extends BaseController
             fclose($fileResource);
 
             return response()->json(['ok' => 'correct input', 'data' => $newRow]);
-        } catch (Exception $err) {
-            LogErrors::log($err);
+        } catch (Throwable $err) {
+            MyLogger::error($err);
 
             return response('Server error', 500);
         }
@@ -205,8 +205,8 @@ class Controller extends BaseController
             }
 
             return response()->download($filePath, $request->session()->get('originalName', self::DEFAULT_NAME), ['Content-type' => 'text/csv']);
-        } catch (Exception $err) {
-            LogErrors::log($err);
+        } catch (Throwable $err) {
+            MyLogger::error($err);
 
             return response('Server error', 500);
         }
@@ -248,8 +248,8 @@ class Controller extends BaseController
             $request->session()->put('delimiter', Delimiter::getDelimiter(self::FOLDER_PATH.$fileName));
 
             return response()->json(['ok' => 'correct input']);
-        } catch (Exception $err) {
-            LogErrors::log($err);
+        } catch (Throwable $err) {
+            MyLogger::error($err);
 
             return response('Server error', 500);
         }
