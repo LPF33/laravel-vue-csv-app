@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class Delimiter
 {
@@ -54,47 +55,53 @@ class Controller extends BaseController
      */
     public function readCSV(Request $request)
     {
-        if (! $request->session()->has('file')) {
-            return response()->json(['error' => 'Upload CSV file']);
-        }
-
-        $filePath = self::FOLDER_PATH.$request->session()->get('file');
-
-        if (! file_exists($filePath)) {
-            return response()->json(['error' => 'Upload CSV file']);
-        }
-
-        $fileResource = fopen($filePath, 'r');
-
-        $tableArray = [
-            'header' => [],
-            'body' => [],
-        ];
-        $rowCounter = 0;
-
-        $delimiter = $request->session()->get('delimiter', function () use ($filePath) {
-            return Delimiter::getDelimiter($filePath);
-        });
-
-        while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, $delimiter)) !== false) {
-            if ($rowCounter === 0) {
-                $tableHeader = [];
-                foreach ($rowCSV as $key) {
-                    $tableHeader[] = $key;
-                }
-                $tableArray['header'] = $tableHeader;
-            } else {
-                $newRow = [];
-                for ($i = 0; $i < count($rowCSV); $i++) {
-                    $newRow[$tableArray['header'][$i]] = trim($rowCSV[$i]);
-                }
-                array_push($tableArray['body'], $newRow);
+        try {
+            if (! $request->session()->has('file')) {
+                return response()->json(['error' => 'Upload CSV file']);
             }
-            $rowCounter++;
-        }
-        fclose($fileResource);
 
-        return response()->json($tableArray);
+            $filePath = self::FOLDER_PATH.$request->session()->get('file');
+
+            if (! file_exists($filePath)) {
+                return response()->json(['error' => 'Upload CSV file']);
+            }
+
+            $fileResource = fopen($filePath, 'r');
+
+            $tableArray = [
+                'header' => [],
+                'body' => [],
+            ];
+            $rowCounter = 0;
+
+            $delimiter = $request->session()->get('delimiter', function () use ($filePath) {
+                return Delimiter::getDelimiter($filePath);
+            });
+
+            while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, $delimiter)) !== false) {
+                if ($rowCounter === 0) {
+                    $tableHeader = [];
+                    foreach ($rowCSV as $key) {
+                        $tableHeader[] = $key;
+                    }
+                    $tableArray['header'] = $tableHeader;
+                } else {
+                    $newRow = [];
+                    for ($i = 0; $i < count($rowCSV); $i++) {
+                        $newRow[$tableArray['header'][$i]] = trim($rowCSV[$i]);
+                    }
+                    array_push($tableArray['body'], $newRow);
+                }
+                $rowCounter++;
+            }
+            fclose($fileResource);
+
+            return response()->json($tableArray);
+        } catch (Exception $err) {
+            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+
+            return response('Server error', 500);
+        }
     }
 
     /**
@@ -106,54 +113,60 @@ class Controller extends BaseController
      */
     public function writeCSV(Request $request)
     {
-        $collection = $request->collect();
+        try {
+            $collection = $request->collect();
 
-        $rowIndex = filter_var($collection['index'], FILTER_VALIDATE_INT);
+            $rowIndex = filter_var($collection['index'], FILTER_VALIDATE_INT);
 
-        $newRow = collect($collection['data'])->map(fn ($value) => trim(strip_tags($value)));
+            $newRow = collect($collection['data'])->map(fn ($value) => trim(strip_tags($value ?? '')));
 
-        if ($rowIndex === false) {
-            return response()->json(['error' => 'Incorrect input']);
-        }
-
-        if (! $request->session()->has('file')) {
-            return response()->json(['error' => 'Upload CSV file']);
-        }
-
-        $oldFilePath = self::FOLDER_PATH.$request->session()->get('file');
-        $newFileName = Uuid::uuid4()->toString().'.csv';
-        $newFilePath = self::FOLDER_PATH.$newFileName;
-
-        $fileResource = fopen($oldFilePath, 'r');
-        $newFileResource = fopen($newFilePath, 'w');
-
-        if ($fileResource === false || $newFileResource === false) {
-            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
-        }
-
-        $delimiter = $request->session()->get('delimiter', function () use ($oldFilePath) {
-            return Delimiter::getDelimiter($oldFilePath);
-        });
-
-        $rowCounter = 0;
-        while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, $delimiter)) !== false) {
-            if ($rowCounter === $rowIndex + 1) {
-                fputcsv($newFileResource, [...$newRow->values()], $delimiter);
-            } else {
-                fputcsv($newFileResource, $rowCSV, $delimiter);
+            if ($rowIndex === false) {
+                return response()->json(['error' => 'Incorrect input']);
             }
-            $rowCounter++;
+
+            if (! $request->session()->has('file')) {
+                return response()->json(['error' => 'Upload CSV file']);
+            }
+
+            $oldFilePath = self::FOLDER_PATH.$request->session()->get('file');
+            $newFileName = Uuid::uuid4()->toString().'.csv';
+            $newFilePath = self::FOLDER_PATH.$newFileName;
+
+            $fileResource = fopen($oldFilePath, 'r');
+            $newFileResource = fopen($newFilePath, 'w');
+
+            if ($fileResource === false || $newFileResource === false) {
+                return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
+            }
+
+            $delimiter = $request->session()->get('delimiter', function () use ($oldFilePath) {
+                return Delimiter::getDelimiter($oldFilePath);
+            });
+
+            $rowCounter = 0;
+            while (! feof($fileResource) && ($rowCSV = fgetcsv($fileResource, 0, $delimiter)) !== false) {
+                if ($rowCounter === $rowIndex + 1) {
+                    fputcsv($newFileResource, [...$newRow->values()], $delimiter);
+                } else {
+                    fputcsv($newFileResource, $rowCSV, $delimiter);
+                }
+                $rowCounter++;
+            }
+            fclose($newFileResource);
+            fclose($fileResource);
+
+            $request->session()->put('file', $newFileName);
+
+            if (! unlink($oldFilePath)) {
+                return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
+            }
+
+            return response()->json(['ok' => 'correct input']);
+        } catch (Exception $err) {
+            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+
+            return response('Server error', 500);
         }
-        fclose($newFileResource);
-        fclose($fileResource);
-
-        $request->session()->put('file', $newFileName);
-
-        if (! unlink($oldFilePath)) {
-            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
-        }
-
-        return response()->json(['ok' => 'correct input']);
     }
 
     /**
@@ -164,31 +177,37 @@ class Controller extends BaseController
      */
     public function appendCSV(Request $request)
     {
-        if (! $request->session()->has('file')) {
-            return response()->json(['error' => 'Upload CSV file']);
+        try {
+            if (! $request->session()->has('file')) {
+                return response()->json(['error' => 'Upload CSV file']);
+            }
+
+            $filePath = self::FOLDER_PATH.$request->session()->get('file');
+
+            $collection = $request->collect();
+
+            $newRow = collect($collection['data'])->map(fn ($value) => trim(strip_tags($value ?? '')));
+
+            $fileResource = fopen($filePath, 'a');
+
+            if ($fileResource === false) {
+                return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
+            }
+
+            $delimiter = $request->session()->get('delimiter', function () use ($filePath) {
+                return Delimiter::getDelimiter($filePath);
+            });
+
+            fputcsv($fileResource, [...$newRow->values()], $delimiter);
+
+            fclose($fileResource);
+
+            return response()->json(['ok' => 'correct input', 'data' => $newRow]);
+        } catch (Exception $err) {
+            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+
+            return response('Server error', 500);
         }
-
-        $filePath = self::FOLDER_PATH.$request->session()->get('file');
-
-        $collection = $request->collect();
-
-        $newRow = collect($collection['data'])->map(fn ($value) => trim(strip_tags($value)));
-
-        $fileResource = fopen($filePath, 'a');
-
-        if ($fileResource === false) {
-            return response(['error' => 'Server error'], 500, ['Content-type' => 'application/json']);
-        }
-
-        $delimiter = $request->session()->get('delimiter', function () use ($filePath) {
-            return Delimiter::getDelimiter($filePath);
-        });
-
-        fputcsv($fileResource, [...$newRow->values()], $delimiter);
-
-        fclose($fileResource);
-
-        return response()->json(['ok' => 'correct input', 'data' => $newRow]);
     }
 
     /**
@@ -198,17 +217,23 @@ class Controller extends BaseController
      */
     public function exportCSV(Request $request)
     {
-        if (! $request->session()->has('file')) {
-            return redirect('/');
+        try {
+            if (! $request->session()->has('file')) {
+                return redirect('/');
+            }
+
+            $filePath = self::FOLDER_PATH.$request->session()->get('file');
+
+            if (! file_exists($filePath)) {
+                return redirect('/');
+            }
+
+            return response()->download($filePath, $request->session()->get('originalName', self::DEFAULT_NAME), ['Content-type' => 'text/csv']);
+        } catch (Exception $err) {
+            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+
+            return response('Server error', 500);
         }
-
-        $filePath = self::FOLDER_PATH.$request->session()->get('file');
-
-        if (! file_exists($filePath)) {
-            return redirect('/');
-        }
-
-        return response()->download($filePath, $request->session()->get('originalName', self::DEFAULT_NAME), ['Content-type' => 'text/csv']);
     }
 
     /**
@@ -247,7 +272,9 @@ class Controller extends BaseController
             $request->session()->put('delimiter', Delimiter::getDelimiter(self::FOLDER_PATH.$fileName));
 
             return response()->json(['ok' => 'correct input']);
-        } catch (FileException $err) {
+        } catch (Exception $err) {
+            Log::error($err->getMessage(), ['file' => $err->getLine(), 'line' => $err->getLine()]);
+
             return response('Server error', 500);
         }
     }
