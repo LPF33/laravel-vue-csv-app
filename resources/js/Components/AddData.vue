@@ -1,30 +1,27 @@
 <template>
     <form @submit.prevent="submit" :class="{ embed: embed }">
-        <div
-            v-for="(item, key) in inputData"
-            :key="key"
-            :class="{ error: error[key] }"
-        >
-            <label :for="key">{{ key }}</label>
-            <input type="text" :id="key" v-model="inputData[key]" />
-            <p v-if="key in error" class="form-error">
-                {{ error[key] }}
-            </p>
+        <div v-for="(item, key) in inputData" :key="String(index) + key">
+            <label :for="String(index) + key">{{ key }}</label>
+            <input
+                type="text"
+                :id="String(index) + key"
+                v-model="inputData[key]"
+            />
         </div>
         <div class="button-wrapper">
             <button type="submit">
                 <font-awesome-icon
-                    v-if="showIcon === 'save'"
+                    v-if="icon === 'save'"
                     icon="fa-solid fa-floppy-disk"
                     class="icon"
                 />
                 <font-awesome-icon
-                    v-if="showIcon === 'check'"
+                    v-if="icon === 'check'"
                     icon="fa-solid fa-circle-check"
                     class="icon icon-check"
                 />
                 <font-awesome-icon
-                    v-if="showIcon === 'error'"
+                    v-if="icon === 'error'"
                     icon="fa-solid fa-triangle-exclamation"
                     class="icon icon-error"
                 />
@@ -38,8 +35,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, reactive, ref, watch } from "vue";
-import { IArticle, IDataRowIndex, TFormError } from "../types";
+import { defineComponent, PropType, reactive, toRefs, watch } from "vue";
+import { IRowData, IDataRowIndex, IAddDataState } from "../types";
 import useAxios from "@/Composables/useAxios";
 
 export default defineComponent({
@@ -50,96 +47,53 @@ export default defineComponent({
             type: Number,
             default: -1,
         },
-        data: Object as PropType<IArticle | undefined>,
+        data: {
+            type: Object as PropType<IRowData>,
+            required: true,
+        },
     },
     emit: ["save-row", "close-add-data"],
     setup(props, { emit }) {
-        const inputData = reactive<IArticle>(
-            props.data
-                ? { ...props.data }
-                : {
-                      Hauptartikelnr: "",
-                      Artikelname: "",
-                      Hersteller: "",
-                      Beschreibung: "",
-                      Materialangaben: "",
-                      Geschlecht: "",
-                      Produktart: "",
-                      Ärmel: "",
-                      Bein: "",
-                      Kragen: "",
-                      Herstellung: "",
-                      Taschenart: "",
-                      Grammatur: "",
-                      Material: "",
-                      Ursprungsland: "",
-                      Bildname: "",
-                  }
-        );
-
-        const error = reactive<TFormError>({
-            Hauptartikelnr: "",
-            Artikelname: "",
-            Hersteller: "",
-            Beschreibung: "",
-            Materialangaben: "",
-            Geschlecht: "",
-            Produktart: "",
-            Material: "",
+        const state = reactive<IAddDataState>({
+            inputData: { ...props.data },
+            icon: "save",
         });
-
-        const showIcon = ref<"save" | "check" | "error">("save");
 
         const { responseData, responseError, fireAxios } =
             useAxios<IDataRowIndex>("post");
 
-        function checkIfEmpty(): boolean {
-            let hasError = false;
-            let elem: keyof TFormError;
-            for (elem in error) {
-                if (inputData[elem] === "") {
-                    error[elem] = "Please fill in this field";
-                    hasError = true;
-                } else {
-                    error[elem] = "";
-                }
-            }
-            return hasError;
-        }
-
         function clearInputs() {
-            let elem: keyof IArticle;
-            for (elem in inputData) {
-                inputData[elem] = "";
-            }
-            let err: keyof TFormError;
-            for (err in error) {
-                error[err] = "";
+            for (const elem in state.inputData) {
+                state.inputData[elem] = "";
             }
         }
 
         function timeoutIcon(str: "check" | "error") {
-            showIcon.value = str;
-            setTimeout(() => (showIcon.value = "save"), 3000);
+            state.icon = str;
+            setTimeout(() => (state.icon = "save"), 3000);
         }
 
         async function submit() {
-            if (checkIfEmpty()) {
-                timeoutIcon("error");
-                return;
-            }
-
             fireAxios(props.embed ? "/api/write" : "/api/add", {
                 index: props.index,
-                data: inputData,
+                data: state.inputData,
             });
         }
+
+        function close() {
+            emit("close-add-data");
+        }
+
+        watch(
+            () => props.data,
+            (newValue) => (state.inputData = { ...newValue })
+        );
 
         watch(responseData, (newValue) => {
             if (newValue !== null) {
                 emit("save-row", {
                     index: props.index,
-                    data: { ...inputData },
+                    data: { ...state.inputData },
                 });
                 clearInputs();
                 timeoutIcon("check");
@@ -148,16 +102,11 @@ export default defineComponent({
 
         watch(responseError, (hasError) => {
             if (hasError) {
-                checkIfEmpty();
                 timeoutIcon("error");
             }
         });
 
-        function close() {
-            emit("close-add-data");
-        }
-
-        return { inputData, error, submit, showIcon, close };
+        return { ...toRefs(state), submit, close };
     },
 });
 </script>
