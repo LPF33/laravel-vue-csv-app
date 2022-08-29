@@ -5,7 +5,7 @@ ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update \
-    && apt-get install -y curl libapache2-mod-php\
+    && apt-get install -y curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev libapache2-mod-php\
     && apt-get install -y php8.1-cli php8.1-dev php8.1-curl \
     && php -r "readfile('https://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
     && curl -sLS https://deb.nodesource.com/setup_16.x | bash - \
