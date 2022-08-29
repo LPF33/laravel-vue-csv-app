@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Utilities\Delimiter;
 use App\Utilities\MyLogger;
+use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;

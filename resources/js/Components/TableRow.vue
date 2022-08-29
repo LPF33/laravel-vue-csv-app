@@ -38,7 +38,7 @@ export default defineComponent({
             useAxios<IDataRowIndex>("post");
 
         function initAxios(event: IUpdateValueEmit) {
-            fireAxios("/api/write", {
+            fireAxios("/csv/write", {
                 index: event.rowIndex,
                 data: {
                     ...props.row,

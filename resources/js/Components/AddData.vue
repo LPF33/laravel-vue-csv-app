@@ -74,7 +74,7 @@ export default defineComponent({
         }
 
         async function submit() {
-            fireAxios(props.embed ? "/api/write" : "/api/add", {
+            fireAxios(props.embed ? "/csv/write" : "/csv/add", {
                 index: props.index,
                 data: state.inputData,
             });

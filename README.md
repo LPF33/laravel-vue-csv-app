@@ -14,11 +14,15 @@
 
 ## Run project local
 
-The following components must be installed locally:
+1. Run it with Docker:
+   - git clone git@github.com:LPF33/laravel-vue-csv-app.git
+   - Docker build & run
 
-- [nodejs](https://nodejs.org/en/) v16
-- [PHP](https://dotnet.microsoft.com/download) v8
-- [Composer](https://getcomposer.org/) v2.3.10
+2. Or following components must be installed locally:
+
+   - [nodejs](https://nodejs.org/en/) v16
+   - [PHP](https://dotnet.microsoft.com/download) v8
+   - [Composer](https://getcomposer.org/) v2.3.10
 
 ```console
 $ git clone git@github.com:LPF33/laravel-vue-csv-app.git
@@ -73,13 +77,10 @@ https://laravel.com/docs/9.x/vite
 https://vitejs.dev/config/
 
 ## Laravel Routes
-
-  - API: In folder **routes/api.php**
-    - "/api/read" (GET)
-    - "/api/write" (POST)
-    - "/api/add" (POST)
-    - "/api/upload" (POST)
-    - "/api/export" (GET)
-  
   - Web: In folder **routes/web.php**
-    - "/"
+    - "/" (GET)
+    - "/csv/read" (GET)
+    - "/csv/write" (POST)
+    - "/csv/add" (POST)
+    - "/csv/upload" (POST)
+    - "/csv/export" (GET)

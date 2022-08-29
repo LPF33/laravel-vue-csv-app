@@ -51,7 +51,7 @@ const error = ref("");
 
 const getCSVData = async () => {
     try {
-        const response = await axios.get<AxiosReponse>("/api/read");
+        const response = await axios.get<AxiosReponse>("/csv/read");
         if (response.status === 200 && !response.data.error) {
             data.header = response.data.header;
             data.body = response.data.body;
