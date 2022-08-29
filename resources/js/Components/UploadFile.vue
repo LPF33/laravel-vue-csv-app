@@ -50,7 +50,7 @@ export default defineComponent({
             const formData = new FormData();
             formData.append("file", file.value);
             try {
-                const response = await axios.post("/api/upload", formData, {
+                const response = await axios.post("/csv/upload", formData, {
                     headers: { "Content-Type": "text/csv" },
                 });
                 file.value = null;

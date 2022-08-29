@@ -73,13 +73,10 @@ https://laravel.com/docs/9.x/vite
 https://vitejs.dev/config/
 
 ## Laravel Routes
-
-  - API: In folder **routes/api.php**
-    - "/api/read" (GET)
-    - "/api/write" (POST)
-    - "/api/add" (POST)
-    - "/api/upload" (POST)
-    - "/api/export" (GET)
-  
   - Web: In folder **routes/web.php**
-    - "/"
+    - "/" (GET)
+    - "/csv/read" (GET)
+    - "/csv/write" (POST)
+    - "/csv/add" (POST)
+    - "/csv/upload" (POST)
+    - "/csv/export" (GET)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,4 +16,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('app');
+});
+
+Route::prefix('csv')->group(function () {
+    Route::get('/read', [Controller::class, 'readCSV']);
+
+    Route::get('/export', [Controller::class, 'exportCSV']);
+
+    Route::post('/add', [Controller::class, 'appendCSV']);
+
+    Route::post('/write', [Controller::class, 'writeCSV']);
+
+    Route::post('/upload', [Controller::class, 'importCSV']);
 });

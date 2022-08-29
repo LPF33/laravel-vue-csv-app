@@ -29,7 +29,7 @@
             <font-awesome-icon icon="fa-solid fa-upload" class="icon" />
             <span>Upload</span>
         </button>
-        <a href="/api/export">
+        <a href="/csv/export">
             <font-awesome-icon icon="fa-solid fa-download" class="icon" />
             <span>Download</span>
         </a>
